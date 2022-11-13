@@ -1,5 +1,6 @@
 export type ApiConfig = {
   User?: UserModelConfiguration
+  Car?: CarModelConfiguration
 }
 
 export type AccessRule = {
@@ -37,4 +38,29 @@ export type UserModelConfiguration = {
   access?: AccessRule[]
 }
 
+export type CarModelCreateConfiguration = {
+  disabled?: boolean
+  removedFields?: CarFields[]
+}
+
+export type CarModelReadConfiguration = {
+  disabled?: boolean
+  removedFields?: CarFields[]
+}
+
+export type CarModelUpdateConfiguration = {
+  disabled?: boolean
+  removedFields?: CarFields[]
+}
+
+export type CarModelConfiguration = {
+  create?: CarModelCreateConfiguration
+  read?: CarModelReadConfiguration
+  update?: CarModelUpdateConfiguration
+  delete?: ModelDeleteConfiguration
+  access?: AccessRule[]
+}
+
 export type UserFields = 'id' | 'email' | 'name'
+
+export type CarFields = 'id' | 'color' | 'maxSpeed'

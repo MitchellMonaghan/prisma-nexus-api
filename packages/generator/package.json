@@ -1,7 +1,7 @@
 {
   "name": "prisma-generator-quick-micro",
   "description": "Provide a description about your generator",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "dist/generator.js",
   "license": "MIT",
   "bin": {
@@ -22,7 +22,8 @@
     "@prisma/client": "4.6.1",
     "@prisma/generator-helper": "^4.6.1",
     "@prisma/internals": "^4.6.1",
-    "prettier": "^2.7.1"
+    "prettier": "^2.7.1",
+    "ts-dedent": "^2.2.0"
   },
   "devDependencies": {
     "@types/jest": "^29.2.2",
