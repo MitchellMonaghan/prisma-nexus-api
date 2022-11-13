@@ -1,32 +1,35 @@
 name: CI
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - "*"
+on: [push]
 jobs:
-  Test:
+  build:
+    name: Build, lint, and test on Node ${{ matrix.node }} and ${{ matrix.os }}
+
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version:
-          - 16.x
-        os:
-          - ubuntu-latest
-          - windows-latest
+        node: ['16.x']
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
       - name: Use Node.js ${{matrix.node-version}}
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
+
       - name: Setup PNPM
         uses: pnpm/action-setup@v2.0.1
         with:
           version: 7
       
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+          
       - uses: actions/cache@v3
         name: Setup pnpm cache
         with:
