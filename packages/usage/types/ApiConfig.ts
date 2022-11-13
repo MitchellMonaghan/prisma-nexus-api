@@ -62,5 +62,4 @@ export type CarModelConfiguration = {
 }
 
 export type UserFields = 'id' | 'email' | 'name'
-
 export type CarFields = 'id' | 'color' | 'maxSpeed'
