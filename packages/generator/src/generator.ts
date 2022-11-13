@@ -1,5 +1,5 @@
 import { generatorHandler, GeneratorOptions } from '@prisma/generator-helper'
-import { logger } from '@prisma/sdk'
+import { logger } from '@prisma/internals'
 import { genApiConfig } from './helpers/genApiConfig'
 
 const { version, name } = require('../package.json')
