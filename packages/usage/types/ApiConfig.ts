@@ -1,3 +1,7 @@
+export type ApiConfig = {
+  User?: UserModelConfiguration
+}
+
 export type AccessRule = {
   applyToCreate?: boolean
   applyToRead?: boolean
@@ -8,10 +12,6 @@ export type AccessRule = {
 
 export type ModelDeleteConfiguration = {
   disabled?: boolean
-}
-
-export type ApiConfig = {
-  User?: UserModelConfiguration
 }
 
 export type UserModelCreateConfiguration = {

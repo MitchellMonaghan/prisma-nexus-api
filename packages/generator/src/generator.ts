@@ -14,6 +14,6 @@ generatorHandler({
     }
   },
   onGenerate: async (options: GeneratorOptions) => {
-    genApiConfig(options.generator.output?.value!, options.dmmf.datamodel)
+    await genApiConfig(options.generator.output?.value!, options.dmmf.datamodel)
   },
 })

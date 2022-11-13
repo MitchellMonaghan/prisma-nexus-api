@@ -69,10 +69,11 @@ const genModelConfigTypes = (models: DMMF.Model[]) => {
     return content
 }
 
-export const genApiConfig = (outputPath:string, datamodel: DMMF.Datamodel) => {
+export const genApiConfig = async (outputPath:string, datamodel: DMMF.Datamodel) => {
     const apiConfigPath = path.join(outputPath, 'ApiConfig.ts')
 
-    let contents = `
+    let contents = genApiConfigType(datamodel.models)
+    contents += `\n
     export type AccessRule = {
         applyToCreate?: boolean,
         applyToRead?: boolean,
@@ -80,14 +81,12 @@ export const genApiConfig = (outputPath:string, datamodel: DMMF.Datamodel) => {
         applyToDelete?: boolean,
         rule: any
     }
-
+    
     export type ModelDeleteConfiguration = {
         disabled?: boolean
-    }
-    `
-    contents += '\n' + genApiConfigType(datamodel.models)
+    }`
     contents += '\n' + genModelConfigTypes(datamodel.models)
     contents += '\n' + genFieldTypes(datamodel.models)
 
-    writeFileSafely(apiConfigPath, contents)
+    await writeFileSafely(apiConfigPath, contents)
 }
