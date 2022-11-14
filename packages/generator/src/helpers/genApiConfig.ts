@@ -40,22 +40,22 @@ const genModelConfigTypes = (models: DMMF.Model[]) => {
     for (let i = 0; i < modelNames.length; i++) {
         const modelName = modelNames[i]
         content += (i === 0 ? '' : '\n') + `
-export type ${modelName}ModelCreateConfiguration = {
+export type ${modelName}ModelCreateConfiguration = ModelCreateConfiguration & {
     disabled?: boolean
     removedFields?: ${modelName}Fields[]
 }
 
-export type ${modelName}ModelReadConfiguration = {
+export type ${modelName}ModelReadConfiguration = ModelReadConfiguration & {
     disabled?: boolean
     removedFields?: ${modelName}Fields[]
 }
 
-export type ${modelName}ModelUpdateConfiguration = {
+export type ${modelName}ModelUpdateConfiguration = ModelUpdateConfiguration & {
     disabled?: boolean
     removedFields?: ${modelName}Fields[]
 }
 
-export type ${modelName}ModelConfiguration = {
+export type ${modelName}ModelConfiguration = ModelConfiguration & {
     create?: ${modelName}ModelCreateConfiguration,
     read?: ${modelName}ModelReadConfiguration,
     update?: ${modelName}ModelUpdateConfiguration,
@@ -72,16 +72,39 @@ export const genApiConfig = async (outputPath:string, datamodel: DMMF.Datamodel)
 
     let contents = genApiConfigType(datamodel.models)
     contents += '\n' + `
+export type ModelConfiguration = {
+    create?: ModelCreateConfiguration
+    read?: ModelReadConfiguration
+    update?: ModelUpdateConfiguration
+    delete?: ModelDeleteConfiguration
+    access?: AccessRule[]
+}
+
+export type ModelCreateConfiguration = {
+    disabled?: boolean
+    removedFields?: string[]
+}
+
+export type ModelReadConfiguration = {
+    disabled?: boolean
+    removedFields?: string[]
+}
+
+export type ModelUpdateConfiguration = {
+    disabled?: boolean
+    removedFields?: string[]
+}
+
+export type ModelDeleteConfiguration = {
+    disabled?: boolean
+}
+
 export type AccessRule = {
     applyToCreate?: boolean,
     applyToRead?: boolean,
     applyToUpdate?: boolean,
     applyToDelete?: boolean,
     rule: any
-}
-
-export type ModelDeleteConfiguration = {
-    disabled?: boolean
 }`
     contents += '\n' + genModelConfigTypes(datamodel.models)
     contents += '\n\n' + genFieldTypes(datamodel.models)

@@ -3,6 +3,33 @@ export type ApiConfig = {
   Car?: CarModelConfiguration
 }
 
+export type ModelConfiguration = {
+  create?: ModelCreateConfiguration
+  read?: ModelReadConfiguration
+  update?: ModelUpdateConfiguration
+  delete?: ModelDeleteConfiguration
+  access?: AccessRule[]
+}
+
+export type ModelCreateConfiguration = {
+  disabled?: boolean
+  removedFields?: string[]
+}
+
+export type ModelReadConfiguration = {
+  disabled?: boolean
+  removedFields?: string[]
+}
+
+export type ModelUpdateConfiguration = {
+  disabled?: boolean
+  removedFields?: string[]
+}
+
+export type ModelDeleteConfiguration = {
+  disabled?: boolean
+}
+
 export type AccessRule = {
   applyToCreate?: boolean
   applyToRead?: boolean
@@ -11,26 +38,22 @@ export type AccessRule = {
   rule: any
 }
 
-export type ModelDeleteConfiguration = {
-  disabled?: boolean
-}
-
-export type UserModelCreateConfiguration = {
+export type UserModelCreateConfiguration = ModelCreateConfiguration & {
   disabled?: boolean
   removedFields?: UserFields[]
 }
 
-export type UserModelReadConfiguration = {
+export type UserModelReadConfiguration = ModelReadConfiguration & {
   disabled?: boolean
   removedFields?: UserFields[]
 }
 
-export type UserModelUpdateConfiguration = {
+export type UserModelUpdateConfiguration = ModelUpdateConfiguration & {
   disabled?: boolean
   removedFields?: UserFields[]
 }
 
-export type UserModelConfiguration = {
+export type UserModelConfiguration = ModelConfiguration & {
   create?: UserModelCreateConfiguration
   read?: UserModelReadConfiguration
   update?: UserModelUpdateConfiguration
@@ -38,22 +61,22 @@ export type UserModelConfiguration = {
   access?: AccessRule[]
 }
 
-export type CarModelCreateConfiguration = {
+export type CarModelCreateConfiguration = ModelCreateConfiguration & {
   disabled?: boolean
   removedFields?: CarFields[]
 }
 
-export type CarModelReadConfiguration = {
+export type CarModelReadConfiguration = ModelReadConfiguration & {
   disabled?: boolean
   removedFields?: CarFields[]
 }
 
-export type CarModelUpdateConfiguration = {
+export type CarModelUpdateConfiguration = ModelUpdateConfiguration & {
   disabled?: boolean
   removedFields?: CarFields[]
 }
 
-export type CarModelConfiguration = {
+export type CarModelConfiguration = ModelConfiguration & {
   create?: CarModelCreateConfiguration
   read?: CarModelReadConfiguration
   update?: CarModelUpdateConfiguration
