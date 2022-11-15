@@ -67,11 +67,13 @@ importers:
     specifiers:
       '@prisma/client': 4.6.1
       '@types/node': 16.11.7
+      nexus: ^1.3.0
       prisma: 4.6.1
       prisma-generator-quick-micro: workspace:*
       typescript: 4.5.2
     dependencies:
       '@prisma/client': 4.6.1_prisma@4.6.1
+      nexus: 1.3.0
     devDependencies:
       '@types/node': 16.11.7
       prisma: 4.6.1
@@ -3336,6 +3338,10 @@ packages:
       istanbul-lib-report: 3.0.0
     dev: true
 
+  /iterall/1.3.0:
+    resolution: {integrity: sha512-QZ9qOMdF+QLHxy1QIpUHUU1D5pS2CG2P69LF6L6CPjPYA/XMOmKV3PZpawHoAjHNyB0swdVTRxdYT4tbBbxqwg==}
+    dev: false
+
   /jest-changed-files/29.2.0:
     resolution: {integrity: sha512-qPVmLLyBmvF5HJrY7krDisx6Voi8DmlV3GZYX0aFNbaQsZeoz1hfxcCMbqDGuQCxU1dJy9eYc2xscE8QrCCYaA==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
@@ -4029,6 +4035,15 @@ packages:
   /new-github-issue-url/0.2.1:
     resolution: {integrity: sha512-md4cGoxuT4T4d/HDOXbrUHkTKrp/vp+m3aOA7XXVYwNsUNMK49g3SQicTSeV5GIz/5QVGAeYRAOlyp9OvlgsYA==}
     engines: {node: '>=10'}
+    dev: false
+
+  /nexus/1.3.0:
+    resolution: {integrity: sha512-w/s19OiNOs0LrtP7pBmD9/FqJHvZLmCipVRt6v1PM8cRUYIbhEswyNKGHVoC4eHZGPSnD+bOf5A3+gnbt0A5/A==}
+    peerDependencies:
+      graphql: 15.x || 16.x
+    dependencies:
+      iterall: 1.3.0
+      tslib: 2.4.1
     dev: false
 
   /node-fetch/2.6.7:
@@ -4994,6 +5009,10 @@ packages:
   /tslib/1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
     dev: true
+
+  /tslib/2.4.1:
+    resolution: {integrity: sha512-tGyy4dAjRIEwI7BzsB0lynWgOpfqjUdq91XXAlIWD2OwKBH7oCl/GZG/HT4BOHrTlPMOASlMQ7veyTqpmRcrNA==}
+    dev: false
 
   /tsutils/3.21.0_typescript@4.8.4:
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}

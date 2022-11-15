@@ -1,5 +1,5 @@
-// import path from 'path'
-// import { Generator } from '@paljs/generator'
+import path from 'path'
+import { Generator } from '../generator/Generator'
 import {
   QueriesAndMutations,
   Query,
@@ -70,7 +70,7 @@ export type GenerateNexusTypesOptions = {
 }
 
 export const genNexusTypes = async (options: any) => {
-  const { apiConfig } = options
+  const { outputPath, apiConfig } = options
 
   const configuredModels = Object.keys(apiConfig)
 
@@ -85,17 +85,16 @@ export const genNexusTypes = async (options: any) => {
     excludeFieldsByModel[modelName] = getExcludedFields(config)
   }
 
-  // const apiSchemaPath = path.join(outputPath, 'apiSchema.prisma')
+  const apiSchemaPath = path.join(outputPath, 'apiSchema.prisma')
 
-  // TODO: Imlement my own generator, the paljs one errors im not sure why
-  // const generator = new Generator({
-  //   name: 'nexus',
-  //   schemaPath: apiSchemaPath
-  // }, {
-  //   output: outputPath,
-  //   excludeQueriesAndMutationsByModel,
-  //   excludeFieldsByModel
-  // })
+  const generator = new Generator({
+    name: 'nexus',
+    schemaPath: apiSchemaPath
+  }, {
+    output: outputPath,
+    excludeQueriesAndMutationsByModel,
+    excludeFieldsByModel
+  })
 
-  // return generator.run()
+  return generator.run()
 }
