@@ -1,6 +1,6 @@
+
 generator custom_generator {
   provider      = "npx prisma-generator-quick-micro"
-  output        = "../src/generated"
   apiConfigPath = "./apiConfig.json"
 }
 
@@ -16,9 +16,8 @@ model User {
 }
 
 model Car {
-  id       Int    @id @default(autoincrement())
-  color    String
-  maxSpeed Float
+  id    Int    @id @default(autoincrement())
+  color String
 }
 
 enum NotificationType {

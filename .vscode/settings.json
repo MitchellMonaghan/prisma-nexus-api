@@ -1,0 +1,16 @@
+{
+    "editor.formatOnSave": true,
+    "eslint.format.enable": true,
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "[prisma]": {
+        "editor.defaultFormatter": "Prisma.prisma"
+    },
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "/apiConfig.json"
+            ],
+            "url": "/packages/usage/types/ApiConfigSchema.json"
+        }
+    ]
+}

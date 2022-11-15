@@ -1,0 +1,7 @@
+{
+    "Car": {
+        "create": {"disabled": false, "removedFields": ["maxSpeed"]},
+        "read": {"disabled": false, "removedFields": ["maxSpeed"]},
+        "update": {"disabled": false, "removedFields": ["maxSpeed"]}
+    }
+}

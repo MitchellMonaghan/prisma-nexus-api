@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "dbaeumer.vscode-eslint",
+        "prisma.prisma",
+        "editorconfig.editorconfig",
+        "wayou.vscode-todo-highlight",
+        "ambooth.git-rename"
+    ]
+}
