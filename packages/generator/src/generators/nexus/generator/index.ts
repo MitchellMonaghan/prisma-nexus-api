@@ -1,13 +1,13 @@
 import { writeFileSync, existsSync, readFileSync } from 'fs'
 import { DMMF } from '@prisma/generator-helper'
-import { Generators } from '../Generators'
+import { Generators } from './Generators'
 import { getCrud } from './templates'
 import { join } from 'path'
 
 export class GenerateNexus extends Generators {
-  private indexPath = this.output(this.withExtension('index'));
-  private indexTS = this.readIndex();
-  private indexJS: string[] = [];
+  private indexPath = this.output(this.withExtension('index'))
+  private indexTS = this.readIndex()
+  private indexJS: string[] = []
 
   async run () {
     await this.createModels()

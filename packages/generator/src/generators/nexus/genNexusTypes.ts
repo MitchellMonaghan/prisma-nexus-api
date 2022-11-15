@@ -1,12 +1,14 @@
 import path from 'path'
-import { Generator } from '../generator/Generator'
 import {
   QueriesAndMutations,
   Query,
   Mutation
 } from '@paljs/types'
+// import { getSchema, getDMMF } from '@prisma/internals'
 
-import { ApiConfig, ModelConfiguration } from '../_types'
+import { GenerateNexus } from './generator'
+
+import { ApiConfig, ModelConfiguration } from '../../_types'
 
 const getExcludedOperations = (modelApiConfiguration?: ModelConfiguration) => {
   const createQueries = ['createOne'] as Mutation[]
@@ -69,7 +71,7 @@ export type GenerateNexusTypesOptions = {
   apiConfig: ApiConfig;
 }
 
-export const genNexusTypes = async (options: any) => {
+const generateModelsQueriesAndMutations = async (apiSchemaPath: string, options: GenerateNexusTypesOptions) => {
   const { outputPath, apiConfig } = options
 
   const configuredModels = Object.keys(apiConfig)
@@ -85,16 +87,26 @@ export const genNexusTypes = async (options: any) => {
     excludeFieldsByModel[modelName] = getExcludedFields(config)
   }
 
-  const apiSchemaPath = path.join(outputPath, 'apiSchema.prisma')
-
-  const generator = new Generator({
-    name: 'nexus',
-    schemaPath: apiSchemaPath
-  }, {
+  // Generate types and queries/mutations
+  const generator = new GenerateNexus(apiSchemaPath, {
     output: outputPath,
     excludeQueriesAndMutationsByModel,
     excludeFieldsByModel
   })
 
-  return generator.run()
+  await generator.run()
+}
+
+// const generateInputTypes = async (apiSchemaPath: string, options: GenerateNexusTypesOptions) => {
+//   const { apiConfig } = options
+
+//   const datamodel = await getSchema(apiSchemaPath)
+//   const dmmf = await getDMMF({ datamodel })
+// }
+
+export const genNexusTypes = async (options: GenerateNexusTypesOptions) => {
+  const apiSchemaPath = path.join(options.outputPath, 'apiSchema.prisma')
+
+  await generateModelsQueriesAndMutations(apiSchemaPath, options)
+  // await generateInputTypes(apiSchemaPath, options)
 }

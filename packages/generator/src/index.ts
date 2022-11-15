@@ -2,9 +2,9 @@ import { generatorHandler, GeneratorOptions } from '@prisma/generator-helper'
 import { logger } from '@prisma/internals'
 
 import { getConfig } from './utils/getConfigFile'
-import { genApiConfigTypes } from './helpers/genApiConfigTypes'
-import { genPrismaApiSchema } from './helpers/genPrismaApiSchema'
-import { genNexusTypes } from './helpers/genNexusTypes'
+import { genApiConfigTypes } from './generators/genApiConfigTypes'
+import { genPrismaApiSchema } from './generators/genPrismaApiSchema'
+import { genNexusTypes } from './generators/nexus/genNexusTypes'
 import { ApiConfig } from './_types'
 
 const { version, name } = require('../package.json')

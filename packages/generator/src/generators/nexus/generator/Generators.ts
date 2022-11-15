@@ -17,9 +17,9 @@ export class Generators {
     excludeFieldsByModel: {},
     excludeQueriesAndMutations: [],
     excludeQueriesAndMutationsByModel: {}
-  };
+  }
 
-  isJS?: boolean = false;
+  isJS?: boolean = false
 
   queries: Query[] = [
     'findUnique',
@@ -27,7 +27,7 @@ export class Generators {
     'findMany',
     'findCount',
     'aggregate'
-  ];
+  ]
 
   mutations: Mutation[] = [
     'createOne',
@@ -36,11 +36,11 @@ export class Generators {
     'deleteOne',
     'updateMany',
     'deleteMany'
-  ];
+  ]
 
-  schemaString: string;
+  schemaString: string
 
-  readyDmmf?: DMMF.Document;
+  readyDmmf?: DMMF.Document
 
   constructor (private schemaPath: string, customOptions?: Partial<Options>) {
     this.options = { ...this.options, ...customOptions }
