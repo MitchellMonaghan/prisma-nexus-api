@@ -10,7 +10,7 @@
     "generatePrisma": "npx prisma generate"
   },
   "devDependencies": {
-    "prisma-generator-quick-micro": "workspace:*",
+    "@quickmicro/prisma-generator-quick-micro": "workspace:*",
     "@types/node": "16.11.7",
     "prisma": "4.6.1",
     "rimraf": "^3.0.2",
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@prisma/client": "4.6.1",
-    "@quickmicro/nexus-plugin": "workspace:^0.0.1",
+    "@quickmicro/nexus-plugin": "workspace:*",
     "graphql": "^16.6.0",
     "nexus": "^1.3.0"
   }
