@@ -1,7 +1,7 @@
 // import { getSampleDMMF } from './__fixtures__/getSampleDMMF'
 
-// test('api config generation', async () => {
-//   // const sampleDMMF = await getSampleDMMF()
+test('api config generation', async () => {
+  // const sampleDMMF = await getSampleDMMF()
 
-//   expect(true).toBe(true)
-// })
+  expect(true).toBe(true)
+})
