@@ -1,4 +1,6 @@
 import { scalarType, asNexusMethod } from 'nexus'
+import { NexusScalarTypeDef } from 'nexus/dist/definitions/scalarType'
+
 import {
   JSONResolver,
   BigIntResolver,
@@ -7,9 +9,9 @@ import {
 
 import { Settings } from './settings'
 
-export const Json = asNexusMethod(JSONResolver, 'json')
-export const BigInt = asNexusMethod(BigIntResolver, 'bigint')
-export const DateTime = asNexusMethod(DateResolver, 'date')
+export const Json = asNexusMethod(JSONResolver, 'json') as NexusScalarTypeDef<'Json'>
+export const BigInt = asNexusMethod(BigIntResolver, 'bigint') as NexusScalarTypeDef<'BigInt'>
+export const DateTime = asNexusMethod(DateResolver, 'date') as NexusScalarTypeDef<'DateTime'>
 
 const defaultScalar = {
   Json,
