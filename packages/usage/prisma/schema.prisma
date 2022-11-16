@@ -1,7 +1,7 @@
 generator custom_generator {
   provider      = "npx prisma-generator-quick-micro"
   output        = "../src/generated"
-  apiConfigPath = "./apiConfig.json"
+  apiConfigPath = "./src/apiConfig.json"
 }
 
 datasource db {

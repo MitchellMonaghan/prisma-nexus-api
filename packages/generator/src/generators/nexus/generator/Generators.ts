@@ -28,7 +28,7 @@ type GeneratorOptions = {
 
 export class Generators {
   private schemaPath: string
-  protected options: GeneratorOptions = {
+  public options: GeneratorOptions = {
     prismaName: 'prisma',
     output: join(projectRoot, 'src/graphql'),
     excludeFields: [],

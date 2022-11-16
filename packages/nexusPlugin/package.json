@@ -1,17 +1,13 @@
 {
-  "name": "prisma-generator-quick-micro",
-  "description": "Provide a description about your generator",
+  "name": "@quickmicro/nexus-plugin",
+  "description": "QuickMicro nexus plugin for generating types, and input types at run time",
   "version": "0.0.1",
-  "main": "dist/generator.js",
+  "main": "dist/index.js",
   "license": "MIT",
-  "bin": {
-    "prisma-generator-quick-micro": "dist/bin.js"
-  },
   "engines": {
     "node": ">=14.0"
   },
   "scripts": {
-    "start": "node dist/bin.js",
     "dev": "npx tsc -w",
     "build": "npx tsc",
     "lint": "eslint . --ext .ts",
@@ -20,13 +16,11 @@
     "test": "jest"
   },
   "dependencies": {
-    "@mrleebo/prisma-ast": "https://github.com/MitchellMonaghan/prisma-ast",
-    "@paljs/types": "^4.0.18",
-    "@prisma/client": "4.6.1",
+    "@paljs/plugins": "^4.1.0",
     "@prisma/generator-helper": "^4.6.1",
-    "@prisma/internals": "^4.6.1",
+    "graphql": "^16.6.0",
     "lodash": "^4.17.21",
-    "typescript-json-schema": "^0.54.0"
+    "nexus": "^1.3.0"
   },
   "devDependencies": {
     "@types/jest": "^29.2.2",
