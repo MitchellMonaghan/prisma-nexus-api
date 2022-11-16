@@ -1,0 +1,52 @@
+{
+  "version": "0.0.1",
+  "license": "MIT",
+  "name": "@quickmicro/nexus-plugin",
+  "author": "Mitchell Monaghan",
+  "module": "dist/nexus-plugin.esm.js",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.189",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "@typescript-eslint/parser": "^5.43.0",
+    "eslint": "^8.27.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jest": "^27.1.5",
+    "eslint-plugin-n": "^15.5.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "husky": "^8.0.2",
+    "tsdx": "^0.14.1",
+    "tslib": "^2.4.1",
+    "typescript": "^4.9.3"
+  },
+  "dependencies": {
+    "@paljs/plugins": "^4.1.0",
+    "@prisma/generator-helper": "^4.6.1",
+    "@types/node": "^18.11.9",
+    "graphql": "^16.6.0",
+    "graphql-scalars": "^1.20.1",
+    "lodash": "^4.17.21",
+    "nexus": "^1.3.0"
+  }
+}
