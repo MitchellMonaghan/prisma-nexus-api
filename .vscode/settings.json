@@ -10,7 +10,7 @@
             "fileMatch": [
                 "/apiConfig.json"
             ],
-            "url": "/packages/usage/types/ApiConfigSchema.json"
+            "url": "/packages/usage/src/generated/ApiConfigSchema.json"
         }
     ]
 }

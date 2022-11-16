@@ -3,13 +3,32 @@ import { join } from 'path'
 
 import { getDMMF, getConfig, getEnvPaths, tryLoadEnvs } from '@prisma/internals'
 import { DMMF } from '@prisma/generator-helper'
-import { Mutation, Options, Query } from '@paljs/types'
+import { Mutation, Query, QueriesAndMutations } from '@paljs/types'
 import { format, Options as PrettierOptions } from 'prettier'
 
 const projectRoot = process.cwd()
 
+type GeneratorOptions = {
+  prismaName: string;
+  models?: string[];
+  output: string;
+  javaScript?: boolean;
+  excludeFields: string[];
+  excludeModels: { name: string; queries?: boolean; mutations?: boolean }[];
+  disableTypes?: boolean;
+  disableQueries?: boolean;
+  disableMutations?: boolean;
+  excludeFieldsByModel: { [modelName: string]: string[] };
+  excludeQueriesAndMutationsByModel: {
+    [modelName: string]: QueriesAndMutations[];
+  };
+  excludeQueriesAndMutations: QueriesAndMutations[];
+  doNotUseFieldUpdateOperationsInput?: boolean;
+}
+
 export class Generators {
-  options: Options = {
+  private schemaPath: string
+  protected options: GeneratorOptions = {
     prismaName: 'prisma',
     output: join(projectRoot, 'src/graphql'),
     excludeFields: [],
@@ -42,7 +61,8 @@ export class Generators {
 
   readyDmmf?: DMMF.Document
 
-  constructor (private schemaPath: string, customOptions?: Partial<Options>) {
+  constructor (schemaPath: string, customOptions?: Partial<GeneratorOptions>) {
+    this.schemaPath = schemaPath
     this.options = { ...this.options, ...customOptions }
     this.isJS = this.options.javaScript
     this.schemaString = readFileSync(this.schemaPath, 'utf-8')

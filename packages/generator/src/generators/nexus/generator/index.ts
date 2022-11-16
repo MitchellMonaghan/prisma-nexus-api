@@ -18,6 +18,9 @@ export class GenerateNexus extends Generators {
     const models = await this.models()
     const dataModels = await this.datamodel()
     for (const model of models) {
+      const path = this.output(model.name)
+      this.mkdir(path)
+
       if (this.isJS) {
         this.indexJS.push(model.name)
       } else {
@@ -28,8 +31,10 @@ export class GenerateNexus extends Generators {
       }
       const dataModel = this.dataModel(dataModels.models, model.name)
       const modelDocs = this.filterDocs(dataModel?.documentation)
-      let fileContent = `${this.getImport('{ objectType }', 'nexus')}\n\n`
-      fileContent += `${!this.isJS ? 'export ' : ''}const ${
+
+      if (!this.options.disableTypes) {
+        let fileContent = `${this.getImport('{ objectType }', 'nexus')}\n\n`
+        fileContent += `${!this.isJS ? 'export ' : ''}const ${
         model.name
       } = objectType({
         nonNullDefaults: {
@@ -39,45 +44,44 @@ export class GenerateNexus extends Generators {
   name: '${model.name}',${modelDocs ? `\ndescription: \`${modelDocs}\`,` : ''}
   definition(t) {
     `
-      model.fields.forEach((field) => {
-        if (!this.excludeFields(model.name).includes(field.name)) {
-          const dataField = this.dataField(field.name, dataModel)
-          const fieldDocs = this.filterDocs(dataField?.documentation)
-          const options = this.getOptions(field, fieldDocs)
-          if (this.shouldOmit(fieldDocs)) {
-            return
-          }
-          if (
-            field.outputType.location === 'scalar' &&
+        model.fields.forEach((field) => {
+          if (!this.excludeFields(model.name).includes(field.name)) {
+            const dataField = this.dataField(field.name, dataModel)
+            const fieldDocs = this.filterDocs(dataField?.documentation)
+            const options = this.getOptions(field, fieldDocs)
+            if (this.shouldOmit(fieldDocs)) {
+              return
+            }
+            if (
+              field.outputType.location === 'scalar' &&
             field.outputType.type !== 'DateTime'
-          ) {
-            fileContent += `t${this.getNullOrList(field)}.${(
+            ) {
+              fileContent += `t${this.getNullOrList(field)}.${(
               field.outputType.type as string
             ).toLowerCase()}('${field.name}'${
               fieldDocs ? `, {description: \`${fieldDocs}\`}` : ''
             })\n`
-          } else {
-            fileContent += `t${this.getNullOrList(field)}.field('${
+            } else {
+              fileContent += `t${this.getNullOrList(field)}.field('${
               field.name
             }'${options})\n`
+            }
           }
-        }
-      })
+        })
 
-      fileContent += `},\n})\n\n${
+        fileContent += `},\n})\n\n${
         this.isJS ? `module.exports = {${model.name}}` : ''
       }`
-      const path = this.output(model.name)
-      this.mkdir(path)
-      writeFileSync(
-        join(path, this.withExtension('type')),
-        this.formation(fileContent)
-      )
+        writeFileSync(
+          join(path, this.withExtension('type')),
+          this.formation(fileContent)
+        )
+      }
 
-      this.createIndex(
-        path,
-        ['type'].concat(await this.createQueriesAndMutations(model.name))
-      )
+      let indexContent = this.options.disableTypes ? [] : ['type']
+      indexContent = indexContent.concat(await this.createQueriesAndMutations(model.name))
+
+      this.createIndex(path, indexContent)
     }
   }
 
