@@ -38,6 +38,6 @@ generatorHandler({
       apiConfig
     })
 
-    // TODO: Nexus input types
+    // TODO: I need to generate the nexus typegen for autocompletion
   }
 })

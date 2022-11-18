@@ -1,14 +1,13 @@
+import { Mutation, Query, QueriesAndMutations, DMMF } from '@paljs/types'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
-import { join } from 'path'
-
-import { getDMMF, getConfig, getEnvPaths, tryLoadEnvs } from '@prisma/internals'
-import { DMMF } from '@prisma/generator-helper'
-import { Mutation, Query, QueriesAndMutations } from '@paljs/types'
 import { format, Options as PrettierOptions } from 'prettier'
+import { join } from 'path'
+import { getInputType, getEnvPaths, tryLoadEnvs, getDMMF } from '@paljs/utils'
 
 const projectRoot = process.cwd()
 
 type GeneratorOptions = {
+  backAsText?: boolean;
   prismaName: string;
   models?: string[];
   output: string;
@@ -16,6 +15,7 @@ type GeneratorOptions = {
   excludeFields: string[];
   excludeModels: { name: string; queries?: boolean; mutations?: boolean }[];
   disableTypes?: boolean;
+  disableInputTypes?: boolean;
   disableQueries?: boolean;
   disableMutations?: boolean;
   excludeFieldsByModel: { [modelName: string]: string[] };
@@ -23,6 +23,8 @@ type GeneratorOptions = {
     [modelName: string]: QueriesAndMutations[];
   };
   excludeQueriesAndMutations: QueriesAndMutations[];
+  excludeInputFields?: string[];
+  filterInputs?: (input: DMMF.InputType) => DMMF.SchemaArg[];
   doNotUseFieldUpdateOperationsInput?: boolean;
 }
 
@@ -33,29 +35,17 @@ export class Generators {
     output: join(projectRoot, 'src/graphql'),
     excludeFields: [],
     excludeModels: [],
+    excludeInputFields: [],
     excludeFieldsByModel: {},
     excludeQueriesAndMutations: [],
     excludeQueriesAndMutationsByModel: {}
   }
 
   isJS?: boolean = false
+  inputName = 'InputTypes'
 
-  queries: Query[] = [
-    'findUnique',
-    'findFirst',
-    'findMany',
-    'findCount',
-    'aggregate'
-  ]
-
-  mutations: Mutation[] = [
-    'createOne',
-    'updateOne',
-    'upsertOne',
-    'deleteOne',
-    'updateMany',
-    'deleteMany'
-  ]
+  queries: Query[] = ['findUnique', 'findFirst', 'findMany', 'findCount', 'aggregate']
+  mutations: Mutation[] = ['createOne', 'updateOne', 'upsertOne', 'deleteOne', 'updateMany', 'deleteMany']
 
   schemaString: string
 
@@ -78,10 +68,6 @@ export class Generators {
     }
   }
 
-  protected async schemaConfig () {
-    return await getConfig({ datamodel: this.schemaString })
-  }
-
   protected async datamodel () {
     const { datamodel }: { datamodel: DMMF.Datamodel } = await this.dmmf()
     return datamodel
@@ -98,8 +84,7 @@ export class Generators {
   protected async models () {
     const { schema }: { schema: DMMF.Schema } = await this.dmmf()
     return schema.outputObjectTypes.model.filter(
-      (model) =>
-        !this.options.models || this.options.models.includes(model.name)
+      (model) => !this.options.models || this.options.models.includes(model.name)
     )
   }
 
@@ -159,26 +144,19 @@ export class Generators {
   }
 
   protected excludeFields (model: string) {
-    return this.options.excludeFields.concat(
-      this.options.excludeFieldsByModel[model]
-    )
+    return this.options.excludeFields.concat(this.options.excludeFieldsByModel[model])
   }
 
   protected disableQueries (model: string) {
     return (
-      this.options.disableQueries ||
-      !!this.options.excludeModels.find(
-        (item) => item.name === model && item.queries
-      )
+      this.options.disableQueries || !!this.options.excludeModels.find((item) => item.name === model && item.queries)
     )
   }
 
   protected disableMutations (model: string) {
     return (
       this.options.disableMutations ||
-      !!this.options.excludeModels.find(
-        (item) => item.name === model && item.mutations
-      )
+      !!this.options.excludeModels.find((item) => item.name === model && item.mutations)
     )
   }
 
@@ -191,9 +169,7 @@ export class Generators {
   }
 
   protected excludedOperations (model: string) {
-    return this.options.excludeQueriesAndMutations.concat(
-      this.options.excludeQueriesAndMutationsByModel[model] ?? []
-    )
+    return this.options.excludeQueriesAndMutations.concat(this.options.excludeQueriesAndMutationsByModel[model] ?? [])
   }
 
   protected mkdir (path: string) {
@@ -224,20 +200,71 @@ export class Generators {
     }
   }
 
+  async generateSDLInputsString () {
+    const { schema }: { schema: DMMF.Schema } = await this.dmmf()
+    const fileContent: string[] = ['scalar DateTime', 'type BatchPayload {', 'count: Int!', '}', '']
+    if (schema) {
+      const enums = [...schema.enumTypes.prisma]
+      if (schema.enumTypes.model) enums.push(...schema.enumTypes.model)
+      enums.forEach((item) => {
+        fileContent.push(`enum ${item.name} {`)
+        item.values.forEach((item2) => {
+          fileContent.push(item2)
+        })
+        fileContent.push('}', '')
+      })
+      const inputObjectTypes = [...schema.inputObjectTypes.prisma]
+      if (schema.inputObjectTypes.model) inputObjectTypes.push(...schema.inputObjectTypes.model)
+
+      inputObjectTypes.forEach((input) => {
+        const inputFields =
+          typeof this.options?.filterInputs === 'function' ? this.options.filterInputs(input) : input.fields
+        if (inputFields.length > 0) {
+          fileContent.push(`input ${input.name} {`, '')
+          inputFields
+            .filter((field) => !this.options?.excludeInputFields?.includes(field.name))
+            .forEach((field) => {
+              const inputType = getInputType(field, this.options)
+
+              fileContent.push(
+                `${field.name}: ${inputType.isList ? `[${inputType.type}!]` : inputType.type}${
+                  field.isRequired ? '!' : ''
+                }`
+              )
+            })
+          fileContent.push('}', '')
+        }
+      })
+
+      schema?.outputObjectTypes.prisma
+        .filter((type) => type.name.includes('Aggregate') || type.name.endsWith('CountOutputType'))
+        .forEach((type) => {
+          fileContent.push(`type ${type.name} {`, '')
+          type.fields
+            .filter((field) => !this.options?.excludeInputFields?.includes(field.name))
+            .forEach((field) => {
+              fileContent.push(
+                `${field.name}: ${field.outputType.isList ? `[${field.outputType.type}!]` : field.outputType.type}${
+                  !field.isNullable ? '!' : ''
+                }`
+              )
+            })
+          fileContent.push('}', '')
+        })
+    }
+    return this.formation(fileContent.join('\n'), 'graphql')
+  }
+
   protected readFile (path: string) {
     return existsSync(path) ? readFileSync(path, { encoding: 'utf-8' }) : ''
   }
 
   protected getImport (content: string, path: string) {
-    return this.isJS
-      ? `const ${content} = require('${path}')`
-      : `import ${content} from '${path}'`
+    return this.isJS ? `const ${content} = require('${path}')` : `import ${content} from '${path}'`
   }
 
   protected filterDocs (docs?: string) {
-    return docs
-      ?.replace(/@PrismaSelect.map\(\[(.*?)\]\)/, '')
-      .replace(/@onDelete\((.*?)\)/, '')
+    return docs?.replace(/@PrismaSelect.map\(\[(.*?)\]\)/, '').replace(/@onDelete\((.*?)\)/, '')
   }
 
   protected shouldOmit (docs?: string) {
@@ -249,33 +276,22 @@ export class Generators {
     }
     const innerExpression = docs?.match(/@Pal.omit\(\[(.*?)\]\)/)
     if (innerExpression) {
-      const expressionArguments = innerExpression[1]
-        .replace(/\s/g, '')
-        .split(',')
-        .filter(Boolean)
+      const expressionArguments = innerExpression[1].replace(/\s/g, '').split(',').filter(Boolean)
       return expressionArguments.includes('output')
     }
     return false
   }
 
-  protected createFileIfNotfound (
-    path: string,
-    fileName: string,
-    content: string
-  ) {
+  protected createFileIfNotfound (path: string, fileName: string, content: string) {
     !existsSync(path) && this.mkdir(path)
-    !existsSync(join(path, fileName)) &&
-      writeFileSync(join(path, fileName), content)
+    !existsSync(join(path, fileName)) && writeFileSync(join(path, fileName), content)
   }
 
   protected get parser () {
     return this.isJS ? 'babel' : 'babel-ts'
   }
 
-  protected formation (
-    text: string,
-    parser: PrettierOptions['parser'] = this.parser
-  ) {
+  formation (text: string, parser: PrettierOptions['parser'] = this.parser) {
     return format(text, {
       singleQuote: true,
       semi: false,

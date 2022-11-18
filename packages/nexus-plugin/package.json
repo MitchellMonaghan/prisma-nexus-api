@@ -41,7 +41,8 @@
     "typescript": "^4.9.3"
   },
   "dependencies": {
-    "@paljs/plugins": "^4.1.0",
+    "@paljs/plugins": "^5.0.2",
+    "@paljs/utils": "^5.0.2",
     "@prisma/generator-helper": "^4.6.1",
     "@types/node": "^18.11.9",
     "graphql": "^16.6.0",

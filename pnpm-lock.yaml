@@ -19,7 +19,8 @@ importers:
   packages/generator:
     specifiers:
       '@mrleebo/prisma-ast': https://github.com/MitchellMonaghan/prisma-ast
-      '@paljs/types': ^4.0.18
+      '@paljs/types': ^5.0.2
+      '@paljs/utils': ^5.0.2
       '@prisma/client': 4.6.1
       '@prisma/generator-helper': ^4.6.1
       '@prisma/internals': ^4.6.1
@@ -43,7 +44,8 @@ importers:
       typescript-json-schema: ^0.54.0
     dependencies:
       '@mrleebo/prisma-ast': github.com/MitchellMonaghan/prisma-ast/925327f5372a39b35b54ad25074118bc494bfa85
-      '@paljs/types': 4.0.18
+      '@paljs/types': 5.0.2
+      '@paljs/utils': 5.0.2
       '@prisma/client': 4.6.1_prisma@4.6.1
       '@prisma/generator-helper': 4.6.1
       '@prisma/internals': 4.6.1
@@ -69,7 +71,8 @@ importers:
 
   packages/nexus-plugin:
     specifiers:
-      '@paljs/plugins': ^4.1.0
+      '@paljs/plugins': ^5.0.2
+      '@paljs/utils': ^5.0.2
       '@prisma/generator-helper': ^4.6.1
       '@types/lodash': ^4.14.189
       '@types/node': ^18.11.9
@@ -90,7 +93,8 @@ importers:
       tslib: ^2.4.1
       typescript: ^4.9.3
     dependencies:
-      '@paljs/plugins': 4.1.0_graphql@16.6.0
+      '@paljs/plugins': 5.0.2_graphql@16.6.0
+      '@paljs/utils': 5.0.2
       '@prisma/generator-helper': 4.6.1
       '@types/node': 18.11.9
       graphql: 16.6.0
@@ -2100,18 +2104,47 @@ packages:
     engines: {node: '>=14'}
     dev: false
 
-  /@paljs/plugins/4.1.0_graphql@16.6.0:
-    resolution: {integrity: sha512-6N1Gb/wJ27EyyI1VxyXyyr3bB8lVSjFpKj7Lfqjb65dwqZ2ImTRKdbxRnnp9nFEyVAkFZK4uqRVyha8JDhKkFQ==}
+  /@paljs/display/5.0.2:
+    resolution: {integrity: sha512-wnfwezJdgtXCcAGHZ6vPqbQhgt6ATe3zqAsmVFCdo3vGScgnq5QKHvtt2GV+eQ+BI01vYu2ovs/AkiHnRx8SiQ==}
     dependencies:
-      '@paljs/types': 4.0.18
-      graphql-fields: 2.0.3
-      graphql-tag: 2.12.6_graphql@16.6.0
+      chalk: 4.1.2
+      debug: 4.3.4
+      ora: 5.4.1
+      readline: 1.3.0
     transitivePeerDependencies:
-      - graphql
+      - supports-color
     dev: false
 
-  /@paljs/types/4.0.18:
-    resolution: {integrity: sha512-dsp7uA9VZgLzkygbsNm9Q3krBcUchAs8urMCMyNIYgfHh5hWgcYf9Jkm9gGb0TE7QMswaXEwsEAzA3uOfyB3CQ==}
+  /@paljs/plugins/5.0.2_graphql@16.6.0:
+    resolution: {integrity: sha512-HmU40dHNGUmIniRhSzBbqc0S5pzRTG8wrMpozMYOnnwnyXv6YAAqyquPgGncXs+GzU/Q0RFTdLo2yxSjENQkxg==}
+    peerDependencies:
+      '@prisma/client': ^4
+      graphql: ^15 | ^16
+    dependencies:
+      '@paljs/types': 5.0.2
+      '@paljs/utils': 5.0.2
+      graphql: 16.6.0
+      graphql-parse-resolve-info: 4.12.3_graphql@16.6.0
+      graphql-tag: 2.12.6_graphql@16.6.0
+      prettier: 2.7.1
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+    dev: false
+
+  /@paljs/types/5.0.2:
+    resolution: {integrity: sha512-tZL0whqqgN954dl58OS9mReOuJERnWIG0TgUq/PzZ0K1angf2yz3UlM/YVc/Wu1Ks03+qvMqxyzl0xqFUx1mkA==}
+    dev: false
+
+  /@paljs/utils/5.0.2:
+    resolution: {integrity: sha512-c4Y101lP8mTHJZxW2rSZodUiuEU6qE0j2OsGnmUSGGzsmGvcO9AoWrChJOZlr6UZfzRScoRfFfomKANR/PWORw==}
+    dependencies:
+      '@paljs/display': 5.0.2
+      '@paljs/types': 5.0.2
+      '@prisma/internals': 4.6.1
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
     dev: false
 
   /@prisma/client/4.6.1_prisma@4.6.1:
@@ -5580,8 +5613,17 @@ packages:
     resolution: {integrity: sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==}
     dev: true
 
-  /graphql-fields/2.0.3:
-    resolution: {integrity: sha512-x3VE5lUcR4XCOxPIqaO4CE+bTK8u6gVouOdpQX9+EKHr+scqtK5Pp/l8nIGqIpN1TUlkKE6jDCCycm/WtLRAwA==}
+  /graphql-parse-resolve-info/4.12.3_graphql@16.6.0:
+    resolution: {integrity: sha512-Lxb+v+SCxzBZHKohK4xje3CBQ1iZ968DiKuFtmwzSaI45oP8FgPJjJv35TOzgv73QLijEdgH4NDZGwIvwJM7Kw==}
+    engines: {node: '>=8.6'}
+    peerDependencies:
+      graphql: '>=0.9 <0.14 || ^14.0.2 || ^15.4.0'
+    dependencies:
+      debug: 4.3.4
+      graphql: 16.6.0
+      tslib: 2.4.1
+    transitivePeerDependencies:
+      - supports-color
     dev: false
 
   /graphql-scalars/1.20.1_graphql@16.6.0:
@@ -8212,6 +8254,10 @@ packages:
     resolution: {integrity: sha512-6RLVvwJtVwEDfPdn6X6Ille4/lxGl0ATOY4FN/B9nxQcgOazvvI0nodiD19ScKq0PvA/29VpaOQML36o5IzZWA==}
     dependencies:
       minimatch: 5.1.0
+    dev: false
+
+  /readline/1.3.0:
+    resolution: {integrity: sha512-k2d6ACCkiNYz222Fs/iNze30rRJ1iIicW7JuX/7/cozvih6YCkFZH+J6mAFDVgv0dRBaAyr4jDqC95R2y4IADg==}
     dev: false
 
   /realpath-native/2.0.0:

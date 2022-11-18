@@ -27,7 +27,8 @@
   },
   "dependencies": {
     "@mrleebo/prisma-ast": "https://github.com/MitchellMonaghan/prisma-ast",
-    "@paljs/types": "^4.0.18",
+    "@paljs/types": "^5.0.2",
+    "@paljs/utils": "^5.0.2",
     "@prisma/client": "4.6.1",
     "@prisma/generator-helper": "^4.6.1",
     "@prisma/internals": "^4.6.1",

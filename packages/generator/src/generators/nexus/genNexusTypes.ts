@@ -90,6 +90,7 @@ const generateQueriesAndMutations = async (apiSchemaPath: string, options: Gener
   const generator = new GenerateNexus(apiSchemaPath, {
     output: outputPath,
     disableTypes: true,
+    disableInputTypes: true,
     excludeQueriesAndMutationsByModel,
     excludeFieldsByModel
   })

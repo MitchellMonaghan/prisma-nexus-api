@@ -1,4 +1,5 @@
-import { getInputType, hasEmptyTypeFields, PrismaSelect } from '@paljs/plugins'
+import { PrismaSelect } from '@paljs/plugins'
+import { getInputType } from '@paljs/utils'
 import { enumType, inputObjectType, objectType, plugin } from 'nexus'
 import { NexusAcceptedTypeDef } from 'nexus/dist/builder'
 import { DMMF } from '@prisma/generator-helper'
@@ -20,13 +21,41 @@ const getDmmfs = (settings?: Settings) => {
   return dmmfs
 }
 
-// TODO: Should add type generation to this plugin
-// Check if the type is already part of schema before adding
-// User can use extendType for adding computed props
-// User can use apiConfig for removing fields
-// There's no reason to have the types generated
+interface OptionsType {
+  dmmf?: DMMF.Document;
+  excludeFields?: string[];
+  filterInputs?: (input: DMMF.InputType) => DMMF.SchemaArg[];
+  doNotUseFieldUpdateOperationsInput?: boolean;
+}
+const testedTypes: string[] = []
+const hasEmptyTypeFields = (type: string, options?: OptionsType) => {
+  let schema = options?.dmmf?.schema
+  if (!schema) {
+    const { Prisma } = require('@prisma/client')
+    schema = Prisma.dmmf?.schema
+  }
+  testedTypes.push(type)
+  const inputObjectTypes = schema ? [...schema?.inputObjectTypes.prisma] : []
+  if (schema?.inputObjectTypes.model) { inputObjectTypes.push(...schema.inputObjectTypes.model) }
 
-// I need to generate the nexus typegen for autocompletion
+  const inputType = inputObjectTypes.find((item) => item.name === type)
+  if (inputType) {
+    if (inputType.fields.length === 0) return true
+    for (const field of inputType.fields) {
+      const fieldType = getInputType(field, options)
+      if (
+        fieldType.type !== type &&
+        fieldType.location === 'inputObjectTypes' &&
+        !testedTypes.includes(fieldType.type as string)
+      ) {
+        const state = hasEmptyTypeFields(fieldType.type as string, options)
+        if (state) return true
+      }
+    }
+  }
+  return false
+}
+
 export const paljs = (settings: Settings) => plugin({
   name: 'paljs',
   description:
