@@ -4,9 +4,13 @@ import { format, Options as PrettierOptions } from 'prettier'
 import { join } from 'path'
 import { getInputType, getEnvPaths, tryLoadEnvs, getDMMF } from '@paljs/utils'
 
+import { ApiConfig } from '../../../_types'
+
 const projectRoot = process.cwd()
 
 type GeneratorOptions = {
+  apiConfig: ApiConfig;
+
   backAsText?: boolean;
   prismaName: string;
   models?: string[];
@@ -31,6 +35,7 @@ type GeneratorOptions = {
 export class Generators {
   private schemaPath: string
   public options: GeneratorOptions = {
+    apiConfig: {},
     prismaName: 'prisma',
     output: join(projectRoot, 'src/graphql'),
     excludeFields: [],

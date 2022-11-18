@@ -4,6 +4,8 @@ import { Generators } from './Generators'
 import { getCrud } from './templates'
 import { join } from 'path'
 import { getInputType } from '@paljs/utils'
+import { maxBy } from 'lodash'
+import { ApiConfig } from '../../../_types'
 
 export class GenerateNexus extends Generators {
   generatedText: {
@@ -156,6 +158,8 @@ export class GenerateNexus extends Generators {
     const text: string[] = [`${this.getImport('{ enumType, inputObjectType, objectType }', 'nexus')}`, '']
     const exportModels: string[] = []
     if (data) {
+      const modelNames = dmmf.datamodel.models.map(m => m.name)
+
       const enums = [...data.enumTypes.prisma]
       if (data.enumTypes.model) enums.push(...data.enumTypes.model)
       enums.forEach((item) => {
@@ -165,11 +169,15 @@ export class GenerateNexus extends Generators {
               members: ${JSON.stringify(item.values)},
             })\n`)
       })
+
       const inputObjectTypes = [...data.inputObjectTypes.prisma]
       if (data.inputObjectTypes.model) inputObjectTypes.push(...data.inputObjectTypes.model)
       inputObjectTypes.forEach((input) => {
-        const inputFields =
-          typeof this.options?.filterInputs === 'function' ? this.options.filterInputs(input) : input.fields
+        input.fields = this.filterInputsWithApiConfig(this.options.apiConfig, input, modelNames)
+        const inputFields = typeof this.options?.filterInputs === 'function'
+          ? this.options.filterInputs(input)
+          : input.fields
+
         if (inputFields.length > 0) {
           exportModels.push(input.name)
           text.push(`${!this.isJS ? 'export ' : ''} const ${input.name} = inputObjectType({
@@ -192,6 +200,7 @@ export class GenerateNexus extends Generators {
           text.push('},\n});\n')
         }
       })
+
       data.outputObjectTypes.prisma
         .filter((type) => type.name.includes('Aggregate') || type.name.endsWith('CountOutputType'))
         .forEach((type) => {
@@ -214,10 +223,12 @@ export class GenerateNexus extends Generators {
             })
           text.push('},\n});\n')
         })
+
       if (this.isJS) {
         text.push(`module.exports = {${exportModels.join(',')}}`)
       }
     }
+
     if (this.options.backAsText) {
       this.generatedText.inputs = this.formation(text.join('\n'))
     } else {
@@ -270,5 +281,45 @@ export class GenerateNexus extends Generators {
 
   private getNullOrList (field: DMMF.SchemaField) {
     return field.outputType.isList ? '.list' : !field.isNullable ? '' : '.nullable'
+  }
+
+  private filterInputsWithApiConfig (apiConfig: ApiConfig, input: DMMF.InputType, modelNames: string[]) {
+    const matchingModelNames = modelNames.filter(mn => input.name.startsWith(mn))
+    const model = maxBy(matchingModelNames, (mn) => mn.length)
+
+    if (!model) {
+      return input.fields
+    }
+
+    const config = apiConfig[model as keyof ApiConfig]
+
+    const isCreateInput = input.name.toLowerCase().includes('create')
+    const removedCreateFields = config?.create?.removedFields || []
+
+    const isUpdateInput = input.name.toLowerCase().includes('update')
+    const removedUpdateFields = config?.update?.removedFields || []
+
+    const isReadInput = !(isCreateInput || isUpdateInput)
+    const removedReadFields = config?.read?.removedFields || []
+
+    let fields = input.fields
+    if (isCreateInput) {
+      fields = fields.filter(field => {
+        return !(removedCreateFields.includes(field.name))
+      })
+    }
+
+    if (isUpdateInput) {
+      fields = fields.filter(field => {
+        return !(removedUpdateFields.includes(field.name))
+      })
+    }
+
+    if (isReadInput) {
+      fields = fields.filter(field => {
+        return !(removedReadFields.includes(field.name))
+      })
+    }
+    return fields
   }
 }
