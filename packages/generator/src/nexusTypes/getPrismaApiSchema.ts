@@ -1,5 +1,3 @@
-import fs from 'fs'
-import path from 'path'
 import { intersection } from 'lodash'
 import { createPrismaSchemaBuilder } from '@mrleebo/prisma-ast'
 
@@ -26,7 +24,13 @@ export const isModelDisabled = (modelApiConfiguration?: ModelConfiguration) => {
 
 export const getDisabledFields = (modelApiConfiguration?: ModelConfiguration) => {
   // excludedCreateFields means removed from create inputs
-  const excludedCreateFields = modelApiConfiguration?.create?.removedFields || []
+  const excludedCreateFields = modelApiConfiguration?.create?.removedFields?.map((rf) => {
+    if (typeof rf === 'string') {
+      return rf
+    } else {
+      return rf.fieldName
+    }
+  }) || []
 
   // excludedReadFields means removed from read inputs/outputs
   const excludedReadFields = modelApiConfiguration?.read?.removedFields || []
@@ -38,18 +42,16 @@ export const getDisabledFields = (modelApiConfiguration?: ModelConfiguration) =>
 }
 
 export type GenerateNexusTypesOptions = {
-  schemaPath: string;
-  outputPath: string;
+  dbSchema: string;
   apiConfig: ApiConfig;
 }
 
-export const genPrismaApiSchema = async (options: GenerateNexusTypesOptions) => {
-  const { schemaPath, outputPath, apiConfig } = options
+export const getPrismaApiSchema = async (options: GenerateNexusTypesOptions) => {
+  const { dbSchema, apiConfig } = options
 
   const configuredModels = Object.keys(apiConfig)
 
-  const source = fs.readFileSync(schemaPath, 'utf8')
-  const builder = createPrismaSchemaBuilder(source)
+  const builder = createPrismaSchemaBuilder(dbSchema)
 
   for (let i = 0; i < configuredModels.length; i++) {
     const modelName = configuredModels[i]
@@ -68,7 +70,5 @@ export const genPrismaApiSchema = async (options: GenerateNexusTypesOptions) => 
   }
 
   const schemaString = builder.print()
-
-  const apiSchemaPath = path.join(outputPath, 'apiSchema.prisma')
-  fs.writeFileSync(apiSchemaPath, schemaString)
+  return schemaString
 }

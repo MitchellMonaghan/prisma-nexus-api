@@ -1,12 +1,24 @@
 import path from 'path'
+import { ApolloServer } from '@apollo/server'
+import { startStandaloneServer } from '@apollo/server/standalone'
 import { makeSchema } from 'nexus'
+import { getNexusTypes, ApiConfig } from '@quickmicro/prisma-generator-quick-micro'
 import { paljs } from '@paljs/nexus'
 
-import * as types from './generated'
+const apiConfig:ApiConfig = {
+  User: {
+    create: { removedFields: [] },
+    read: { removedFields: [] },
+    update: { removedFields: [] }
+  }
+}
 
-// Generate prisma dmmf to pass to paljs, we have a different schema for the exposed api
-export const getSchema = async () => {
-  makeSchema({
+const getSchema = async () => {
+  const types = await getNexusTypes({
+    apiConfig
+  })
+
+  return makeSchema({
     types,
     plugins: [
       paljs()
@@ -18,4 +30,18 @@ export const getSchema = async () => {
   })
 }
 
-getSchema()
+const start = async () => {
+  const schema = await getSchema()
+
+  const server = new ApolloServer({
+    schema
+  })
+
+  const { url } = await startStandaloneServer(server, {
+    listen: { port: 4000 }
+  })
+
+  console.log(`🚀  Server ready at: ${url}`)
+}
+
+start()

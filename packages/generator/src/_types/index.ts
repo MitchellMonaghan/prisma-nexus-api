@@ -1,2 +1,4 @@
 export * from './apiConfig'
-export * from './genericModelConfigTypes'
+export * from './genericApiConfig'
+export * from './accessRule'
+export * from './modelDeleteConfiguration'
