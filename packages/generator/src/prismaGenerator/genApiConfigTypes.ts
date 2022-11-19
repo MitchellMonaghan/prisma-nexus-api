@@ -32,12 +32,39 @@ const genApiConfigType = (models: DMMF.Model[]) => {
   return content
 }
 
+const getRequiredFieldResolverName = (model: DMMF.Model, field: DMMF.Field) => `${model.name}${capitalize(field.name)}RequiredFieldResolver`
+const getRequiredFieldResolver = (model: DMMF.Model, field: DMMF.Field) => {
+  const type = getTypeScriptTypeFromPrismaType(field.type)
+  const requiredFieldResolverName = getRequiredFieldResolverName(model, field)
+
+  return `export type ${requiredFieldResolverName} = {
+  fieldName: '${field.name}',
+  resolver: (root: any, args: any, ctx: any, info: any) => Promise<${type}>
+}\n`
+}
+
+const getOptionalFieldResolverName = (model: DMMF.Model, field: DMMF.Field) => `${model.name}${capitalize(field.name)}OptionalFieldResolver`
+const getOptionalFieldResolver = (model: DMMF.Model, field: DMMF.Field) => {
+  const type = getTypeScriptTypeFromPrismaType(field.type)
+  const optionalFieldResolverName = getOptionalFieldResolverName(model, field)
+
+  return `export type ${optionalFieldResolverName} = {
+  fieldName: '${field.name}',
+  resolver: (root: any, args: any, ctx: any, info: any) => Promise<${type}|void>
+}\n`
+}
+
 const genFieldTypes = (models: DMMF.Model[]) => {
   let content = ''
   for (let i = 0; i < models.length; i++) {
     const model = models[i]
     const modelName = model.name
-    // const requiredFieldsTypeName = `${modelName}RequiredFields`
+    const createFieldsTypeName = `${modelName}CreateFields`
+    const createFieldsTypes = []
+    const updateFieldsTypeName = `${modelName}UpdateFields`
+    const updateFieldsTypes = []
+
+    const requiredFieldsTypeName = `${modelName}RequiredFields`
     const optionalFieldsTypeName = `${modelName}OptionalFields`
     const modelFieldsTypes = []
 
@@ -46,23 +73,20 @@ const genFieldTypes = (models: DMMF.Model[]) => {
     // Required Fields
     const requiredFields = model.fields.filter(f => f.isRequired)
     if (requiredFields.length > 0) {
-      // const fieldStringNames = requiredFields.map(rf => `'${rf.name}'`)
-      // content += `export type ${requiredFieldsTypeName} = ${fieldStringNames.join(' | ')}`
-      // content += '\n'
-      // modelFieldsTypes.push(requiredFieldsTypeName)
+      const fieldStringNames = requiredFields.map(rf => `'${rf.name}'`)
+      content += `export type ${requiredFieldsTypeName} = ${fieldStringNames.join(' | ')}`
+      content += '\n'
+      modelFieldsTypes.push(requiredFieldsTypeName)
+      updateFieldsTypes.push(requiredFieldsTypeName)
 
       for (let j = 0; j < requiredFields.length; j++) {
         const field = requiredFields[j]
-        const type = getTypeScriptTypeFromPrismaType(field.type)
-        const fieldResolverName = `${model.name}${capitalize(field.name)}FieldResolver`
 
-        content +=
-`export type ${fieldResolverName} = {
-  fieldName: '${field.name}',
-  resolver: (root: any, args: any, ctx: any, info: any) => Promise<${type}>
-}`
-        content += '\n'
-        modelFieldsTypes.push(fieldResolverName)
+        content += getRequiredFieldResolver(model, field)
+        createFieldsTypes.push(getRequiredFieldResolverName(model, field))
+
+        content += getOptionalFieldResolver(model, field)
+        updateFieldsTypes.push(getOptionalFieldResolverName(model, field))
       }
     }
 
@@ -70,26 +94,23 @@ const genFieldTypes = (models: DMMF.Model[]) => {
     const optionalFields = model.fields.filter(f => !f.isRequired)
     if (optionalFields.length > 0) {
       const fieldStringNames = optionalFields.map(of => `'${of.name}'`)
-      content += `export type ${optionalFieldsTypeName} = ${fieldStringNames.join(' | ')}`
-      content += '\n'
+      content += `\nexport type ${optionalFieldsTypeName} = ${fieldStringNames.join(' | ')}\n`
       modelFieldsTypes.push(optionalFieldsTypeName)
+      createFieldsTypes.push(optionalFieldsTypeName)
+      updateFieldsTypes.push(optionalFieldsTypeName)
 
       for (let j = 0; j < optionalFields.length; j++) {
         const field = optionalFields[j]
-        const type = getTypeScriptTypeFromPrismaType(field.type)
-        const fieldResolverName = `${model.name}${capitalize(field.name)}FieldResolver`
 
-        content +=
-`export type ${fieldResolverName} = {
-  fieldName: '${field.name}',
-  resolver?: (root: any, args: any, ctx: any, info: any) => Promise<${type}|undefined>
-}`
-        content += '\n'
-        modelFieldsTypes.push(fieldResolverName)
+        content += getOptionalFieldResolver(model, field)
+        createFieldsTypes.push(getOptionalFieldResolverName(model, field))
+        updateFieldsTypes.push(getOptionalFieldResolverName(model, field))
       }
     }
 
-    content += `export type ${modelName}Fields = ${modelFieldsTypes.join(' | ')}`
+    content += `export type ${createFieldsTypeName} = ${createFieldsTypes.join(' | ')}`
+    content += `\nexport type ${updateFieldsTypeName} = ${updateFieldsTypes.join(' | ')}`
+    content += `\nexport type ${modelName}Fields = ${modelFieldsTypes.join(' | ')}`
   }
 
   return content
@@ -104,7 +125,7 @@ const genModelConfigTypes = (models: DMMF.Model[]) => {
     content += (i === 0 ? '' : '\n') + `
 export type ${modelName}ModelCreateConfiguration = {
     disabled?: boolean
-    removedFields?: ${modelName}Fields[]
+    removedFields?: ${modelName}CreateFields[]
 }
 
 export type ${modelName}ModelReadConfiguration = {
@@ -114,7 +135,7 @@ export type ${modelName}ModelReadConfiguration = {
 
 export type ${modelName}ModelUpdateConfiguration = {
     disabled?: boolean
-    removedFields?: ${modelName}Fields[]
+    removedFields?: ${modelName}UpdateFields[]
 }
 
 export type ${modelName}ModelConfiguration = {
