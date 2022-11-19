@@ -29,17 +29,13 @@
   },
   "dependencies": {
     "@mrleebo/prisma-ast": "https://github.com/MitchellMonaghan/prisma-ast",
-    "@paljs/plugins": "^5.0.2",
-    "@paljs/types": "^5.0.2",
     "@paljs/utils": "^5.0.2",
     "@prisma/client": "4.6.1",
     "@prisma/generator-helper": "^4.6.1",
     "@prisma/internals": "^4.6.1",
     "graphql": "^16.6.0",
-    "graphql-scalars": "^1.20.1",
     "lodash": "^4.17.21",
-    "nexus": "^1.3.0",
-    "prettier": "^2.7.1"
+    "nexus": "^1.3.0"
   },
   "devDependencies": {
     "@types/jest": "^29.2.2",

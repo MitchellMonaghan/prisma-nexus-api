@@ -27,7 +27,6 @@
     "@apollo/server": "^4.1.1",
     "@paljs/nexus": "^5.0.2",
     "@prisma/client": "4.6.1",
-    "@prisma/internals": "^4.6.1",
     "@quickmicro/prisma-generator-quick-micro": "workspace:*",
     "graphql": "^16.6.0",
     "nexus": "^1.3.0"
