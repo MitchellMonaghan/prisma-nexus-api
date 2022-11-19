@@ -24,7 +24,7 @@ export const getNexusArgs = (args: DMMF.SchemaArg[]) => {
   return nexusArgs
 }
 
-export const getNexusOperationArgs = (mutationName: string, mutationOutputTypes?: DMMF.OutputType) => {
-  const mutationPrismaType = mutationOutputTypes?.fields.find(f => f.name === mutationName)
+export const getNexusOperationArgs = (mutationName: string, mutationOutputTypes: DMMF.OutputType) => {
+  const mutationPrismaType = mutationOutputTypes.fields.find(f => f.name === mutationName)
   return getNexusArgs(mutationPrismaType?.args || [])
 }

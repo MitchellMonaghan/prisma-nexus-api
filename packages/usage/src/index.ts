@@ -4,10 +4,15 @@ import { startStandaloneServer } from '@apollo/server/standalone'
 import { makeSchema } from 'nexus'
 import { getNexusTypes, ApiConfig } from '@quickmicro/prisma-generator-quick-micro'
 import { paljs } from '@paljs/nexus'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 const apiConfig:ApiConfig = {
   User: {
-    create: { removedFields: [] },
+    create: {
+      removedFields: []
+    },
     read: { removedFields: [] },
     update: { removedFields: [] }
   }
@@ -38,7 +43,10 @@ const start = async () => {
   })
 
   const { url } = await startStandaloneServer(server, {
-    listen: { port: 4000 }
+    listen: { port: 4000 },
+    context: async ({ req }) => {
+      return { prisma, req }
+    }
   })
 
   console.log(`🚀  Server ready at: ${url}`)

@@ -97,7 +97,6 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
 
   const data = apiDmmf.schema
   if (!data) {
-    console.log('this is bad')
     return nexusSchema
   }
 
@@ -143,19 +142,23 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
     allTypes.push(model.name)
 
     // Queries
-    nexusSchema.push(aggregate(model.name, queryOutputTypes))
-    nexusSchema.push(findCount(model.name, queryOutputTypes))
-    nexusSchema.push(findFirst(model.name, queryOutputTypes))
-    nexusSchema.push(findMany(model.name, queryOutputTypes))
-    nexusSchema.push(findUnique(model.name, queryOutputTypes))
+    if (queryOutputTypes) {
+      nexusSchema.push(aggregate(model.name, queryOutputTypes))
+      nexusSchema.push(findCount(model.name, queryOutputTypes))
+      nexusSchema.push(findFirst(model.name, queryOutputTypes))
+      nexusSchema.push(findMany(model.name, queryOutputTypes))
+      nexusSchema.push(findUnique(model.name, queryOutputTypes))
+    }
 
     // Mutations
-    nexusSchema.push(createOne(model.name, mutationOutputTypes))
-    nexusSchema.push(upsertOne(model.name, mutationOutputTypes))
-    nexusSchema.push(updateOne(model.name, mutationOutputTypes))
-    nexusSchema.push(updateMany(model.name, mutationOutputTypes))
-    nexusSchema.push(deleteOne(model.name, mutationOutputTypes))
-    nexusSchema.push(deleteMany(model.name, mutationOutputTypes))
+    if (mutationOutputTypes) {
+      nexusSchema.push(createOne(model.name, mutationOutputTypes, modelConfig?.create || {}))
+      nexusSchema.push(upsertOne(model.name, mutationOutputTypes, modelConfig?.create || {}))
+      nexusSchema.push(updateOne(model.name, mutationOutputTypes))
+      nexusSchema.push(updateMany(model.name, mutationOutputTypes))
+      nexusSchema.push(deleteOne(model.name, mutationOutputTypes))
+      nexusSchema.push(deleteMany(model.name, mutationOutputTypes))
+    }
   })
 
   // Enums

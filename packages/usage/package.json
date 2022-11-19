@@ -5,9 +5,11 @@
   "main": "src/index.ts",
   "license": "MIT",
   "scripts": {
-    "dev": "pnpm prisma generate && ts-node ./src/index.ts",
+    "dev": "pnpm prisma generate  && pnpm migrate && ts-node ./src/index.ts",
     "compile": "npx tsc",
-    "start": "pnpm compile && npx prisma generate && node ./dist/index.js"
+    "start": "pnpm compile && npx prisma generate && pnpm migrate && node ./dist/index.js",
+    "migrate": "pnpm prisma migrate dev",
+    "dockerCompose": "docker compose -f ./.docker/docker-compose.yaml up"
   },
   "devDependencies": {
     "@types/node": "16.11.7",

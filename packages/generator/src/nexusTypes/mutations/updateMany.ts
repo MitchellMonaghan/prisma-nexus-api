@@ -2,7 +2,7 @@ import { DMMF } from '@prisma/generator-helper'
 import { mutationField, nonNull } from 'nexus'
 import { getNexusOperationArgs } from '../getNexusArgs'
 
-export const updateMany = (modelName: string, mutationOutputTypes?: DMMF.OutputType) => {
+export const updateMany = (modelName: string, mutationOutputTypes: DMMF.OutputType) => {
   const mutationName = `updateMany${modelName}`
   const args = getNexusOperationArgs(mutationName, mutationOutputTypes)
 

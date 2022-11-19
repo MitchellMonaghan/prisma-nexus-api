@@ -2,7 +2,7 @@ import { DMMF } from '@prisma/generator-helper'
 import { queryField } from 'nexus'
 import { getNexusOperationArgs } from '../getNexusArgs'
 
-export const findUnique = (modelName: string, queryOutputTypes?: DMMF.OutputType) => {
+export const findUnique = (modelName: string, queryOutputTypes: DMMF.OutputType) => {
   const queryName = `findUnique${modelName}`
   const args = getNexusOperationArgs(queryName, queryOutputTypes)
 
