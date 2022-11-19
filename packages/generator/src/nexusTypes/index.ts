@@ -39,31 +39,28 @@ interface OptionsType {
   doNotUseFieldUpdateOperationsInput?: boolean;
 }
 const testedTypes: string[] = []
-const hasEmptyTypeFields = (type: string, options?: OptionsType) => {
-  let schema = options?.dmmf?.schema
-  if (!schema) {
-    const { Prisma } = require('@prisma/client')
-    schema = Prisma.dmmf?.schema
-  }
+const hasEmptyTypeFields = (schema: DMMF.Schema, type: string, options?: OptionsType) => {
   testedTypes.push(type)
+
   const inputObjectTypes = schema ? [...schema?.inputObjectTypes.prisma] : []
   if (schema?.inputObjectTypes.model) { inputObjectTypes.push(...schema.inputObjectTypes.model) }
 
   const inputType = inputObjectTypes.find((item) => item.name === type)
-  if (inputType) {
-    if (inputType.fields.length === 0) return true
-    for (const field of inputType.fields) {
-      const fieldType = getInputType(field, options)
-      if (
-        fieldType.type !== type &&
-        fieldType.location === 'inputObjectTypes' &&
-        !testedTypes.includes(fieldType.type as string)
-      ) {
-        const state = hasEmptyTypeFields(fieldType.type as string, options)
-        if (state) return true
-      }
+  if (!inputType) { return false }
+  if (inputType.fields.length === 0) return true
+
+  for (const field of inputType.fields) {
+    const fieldType = getInputType(field, options)
+    const fieldTypeDoNotMatch = fieldType.type !== type
+    const isInputObject = fieldType.location === 'inputObjectTypes'
+    const alreadyTested = testedTypes.includes(fieldType.type as string)
+
+    if (fieldTypeDoNotMatch && isInputObject && !alreadyTested) {
+      const state = hasEmptyTypeFields(schema, fieldType.type as string, options)
+      if (state) return true
     }
   }
+
   return false
 }
 
@@ -94,72 +91,12 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
   const nexusSchema: NexusAcceptedTypeDef[] = []
 
   const allTypes: string[] = []
+  const inputsWithNoFields: string[] = []
 
   const data = apiDmmf.schema
   if (!data) {
     return nexusSchema
   }
-
-  const modelNames = apiDmmf.datamodel.models.map(m => m.name)
-  const queryOutputTypes = data.outputObjectTypes.prisma.find(t => t.name === 'Query')
-  const mutationOutputTypes = data.outputObjectTypes.prisma.find(t => t.name === 'Mutation')
-
-  // Models
-  const models = apiDmmf.datamodel.models
-  models.forEach((model) => {
-    if (allTypes.includes(model.name)) { return }
-
-    const modelConfig = settings.apiConfig[model.name]
-    const nexusModel = objectType({
-      nonNullDefaults: {
-        output: true,
-        input: false
-      },
-      name: model.name,
-      description: model.documentation,
-      definition (t) {
-        const filteredFields = model.fields.filter((field) => {
-          const excludeFields = modelConfig?.read?.removedFields || []
-          return !excludeFields.includes(field.name)
-        })
-
-        filteredFields.forEach((field) => {
-          const fieldConfig: FieldConfig = {
-            type: field.type as string
-          }
-
-          if (!field.isRequired) {
-            t.nullable.field(field.name, fieldConfig)
-          } else if (field.isList) {
-            t.list.field(field.name, fieldConfig)
-          } else {
-            t.field(field.name, fieldConfig)
-          }
-        })
-      }
-    })
-    nexusSchema.push(nexusModel)
-    allTypes.push(model.name)
-
-    // Queries
-    if (queryOutputTypes) {
-      nexusSchema.push(aggregate(model.name, queryOutputTypes))
-      nexusSchema.push(findCount(model.name, queryOutputTypes))
-      nexusSchema.push(findFirst(model.name, queryOutputTypes))
-      nexusSchema.push(findMany(model.name, queryOutputTypes))
-      nexusSchema.push(findUnique(model.name, queryOutputTypes))
-    }
-
-    // Mutations
-    if (mutationOutputTypes) {
-      nexusSchema.push(createOne(model.name, mutationOutputTypes, modelConfig?.create || {}))
-      nexusSchema.push(upsertOne(model.name, mutationOutputTypes, modelConfig?.create || {}))
-      nexusSchema.push(updateOne(model.name, mutationOutputTypes))
-      nexusSchema.push(updateMany(model.name, mutationOutputTypes))
-      nexusSchema.push(deleteOne(model.name, mutationOutputTypes))
-      nexusSchema.push(deleteMany(model.name, mutationOutputTypes))
-    }
-  })
 
   // Enums
   const enums = [...data.enumTypes.prisma]
@@ -177,13 +114,16 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
   })
 
   // Input types
+  const modelNames = apiDmmf.datamodel.models.map(m => m.name)
   const inputObjectTypes = [...data.inputObjectTypes.prisma]
   if (data.inputObjectTypes.model) { inputObjectTypes.push(...data.inputObjectTypes.model) }
   inputObjectTypes.forEach((input) => {
     const inputFields = filterInputsWithApiConfig(settings.apiConfig, input, modelNames)
 
-    if (inputFields.length === 0) { return }
-
+    if (inputFields.length === 0) {
+      inputsWithNoFields.push(input.name)
+      return
+    }
     if (allTypes.includes(input.name)) { return }
 
     const inputType = inputObjectType({
@@ -195,7 +135,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
         inputFields.forEach((field) => {
           const inputType = getInputType(field, settings)
           const hasEmptyType = inputType.location === 'inputObjectTypes' &&
-              hasEmptyTypeFields(inputType.type as string, {
+              hasEmptyTypeFields(data, inputType.type as string, {
                 dmmf: apiDmmf
               })
 
@@ -252,6 +192,68 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
       allTypes.push(type.name)
     })
 
+  const queryOutputTypes = data.outputObjectTypes.prisma.find(t => t.name === 'Query')
+  const mutationOutputTypes = data.outputObjectTypes.prisma.find(t => t.name === 'Mutation')
+
+  // Models
+  const models = apiDmmf.datamodel.models
+  models.forEach((model) => {
+    if (allTypes.includes(model.name)) { return }
+
+    const modelConfig = settings.apiConfig[model.name]
+    const nexusModel = objectType({
+      nonNullDefaults: {
+        output: true,
+        input: false
+      },
+      name: model.name,
+      description: model.documentation,
+      definition (t) {
+        const filteredFields = model.fields.filter((field) => {
+          const excludeFields = modelConfig?.read?.removedFields || []
+          return !excludeFields.includes(field.name)
+        })
+
+        filteredFields.forEach((field) => {
+          const fieldConfig: FieldConfig = {
+            type: field.type as string
+          }
+
+          if (!field.isRequired) {
+            t.nullable.field(field.name, fieldConfig)
+          } else if (field.isList) {
+            t.list.field(field.name, fieldConfig)
+          } else {
+            t.field(field.name, fieldConfig)
+          }
+        })
+      }
+    })
+    nexusSchema.push(nexusModel)
+    allTypes.push(model.name)
+
+    // Queries
+    if (queryOutputTypes) {
+      nexusSchema.push(aggregate(model.name, queryOutputTypes))
+      nexusSchema.push(findCount(model.name, queryOutputTypes))
+      nexusSchema.push(findFirst(model.name, queryOutputTypes))
+      nexusSchema.push(findMany(model.name, queryOutputTypes))
+      nexusSchema.push(findUnique(model.name, queryOutputTypes))
+    }
+
+    // Mutations
+    if (mutationOutputTypes) {
+      const createConfig = modelConfig?.create || {}
+      const updateConfig = modelConfig?.update || {}
+      nexusSchema.push(createOne(model.name, mutationOutputTypes, createConfig, inputsWithNoFields))
+      nexusSchema.push(upsertOne(model.name, mutationOutputTypes, modelConfig, inputsWithNoFields))
+      nexusSchema.push(updateOne(model.name, mutationOutputTypes, updateConfig, inputsWithNoFields))
+      nexusSchema.push(updateMany(model.name, mutationOutputTypes, updateConfig, inputsWithNoFields))
+      nexusSchema.push(deleteOne(model.name, mutationOutputTypes))
+      nexusSchema.push(deleteMany(model.name, mutationOutputTypes))
+    }
+  })
+
   return nexusSchema
 }
 
@@ -273,7 +275,11 @@ const filterInputsWithApiConfig = (apiConfig: ApiConfig, input: DMMF.InputType, 
   }) || []
 
   const isUpdateInput = input.name.toLowerCase().includes('update')
-  const removedUpdateFields = config?.update?.removedFields || []
+  const removedUpdateFields = config?.update?.removedFields?.map((rf) => {
+    if (typeof rf === 'string') { return rf } else {
+      return rf.fieldName
+    }
+  }) || []
 
   const isReadInput = !(isCreateInput || isUpdateInput)
   const removedReadFields = config?.read?.removedFields || []

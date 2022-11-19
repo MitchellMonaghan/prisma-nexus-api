@@ -18,7 +18,7 @@ export type ModelReadConfiguration = {
 
 export type ModelUpdateConfiguration = {
     disabled?: boolean
-    removedFields?: string[]
+    removedFields?: (string | FieldResolver)[]
 }
 
 export type ModelConfiguration = {

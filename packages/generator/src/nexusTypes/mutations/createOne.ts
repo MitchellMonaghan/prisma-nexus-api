@@ -1,40 +1,42 @@
 import { DMMF } from '@prisma/generator-helper'
 import { mutationField, nonNull } from 'nexus'
 
-import { getNexusOperationArgs } from '../getNexusArgs'
+import { getNexusOperationArgs, getConfiguredFieldResolvers } from '../getNexusArgs'
 import { ModelCreateConfiguration } from '../../_types/genericApiConfig'
 
 export const createOne = (
   modelName: string,
   mutationOutputTypes: DMMF.OutputType,
-  createConfiguration?: ModelCreateConfiguration
+  createConfig: ModelCreateConfiguration,
+  inputsWithNoFields:string[]
 ) => {
   const mutationName = `createOne${modelName}`
-  const args = getNexusOperationArgs(mutationName, mutationOutputTypes)
+  const args = getNexusOperationArgs(mutationName, mutationOutputTypes, inputsWithNoFields)
 
   return mutationField(mutationName, {
     type: nonNull(modelName),
     args,
     resolve: async (parent, args, ctx, info) => {
-      const { data } = args
+      if (!args.data) { args.data = {} }
       const { prisma, select } = ctx
 
-      if (createConfiguration) {
-        const removedFields = createConfiguration.removedFields || []
+      if (createConfig) {
+        const fieldResolvers = await getConfiguredFieldResolvers(
+          parent,
+          args,
+          ctx,
+          info,
+          createConfig.removedFields || [])
 
-        for (let i = 0; i < removedFields.length; i++) {
-          const removedField = removedFields[i]
-          const isString = typeof removedField === 'string'
-
-          if (isString) { continue }
-
-          data[removedField.fieldName] = await removedField.resolver(parent, args, ctx, info)
+        args.data = {
+          ...args.data,
+          ...fieldResolvers
         }
       }
 
       // TODO: Test that all field removals are working as expected
       return prisma[modelName].create({
-        data,
+        ...args,
         ...select
       })
     }

@@ -11,10 +11,37 @@ const prisma = new PrismaClient()
 const apiConfig:ApiConfig = {
   User: {
     create: {
-      removedFields: []
+      removedFields: [
+        'name',
+        {
+          fieldName: 'email',
+          resolver: async () => {
+            return new Date().toISOString()
+          }
+        }
+      ]
     },
-    read: { removedFields: [] },
-    update: { removedFields: [] }
+    read: {
+      removedFields: [
+      // 'id', 'email', 'name'
+      ]
+    },
+    update: {
+      removedFields: [
+        {
+          fieldName: 'email',
+          resolver: async () => {
+            return new Date().toISOString()
+          }
+        },
+        {
+          fieldName: 'name',
+          resolver: async () => {
+            return new Date().toISOString()
+          }
+        }
+      ]
+    }
   }
 }
 

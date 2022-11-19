@@ -36,7 +36,13 @@ export const getDisabledFields = (modelApiConfiguration?: ModelConfiguration) =>
   const excludedReadFields = modelApiConfiguration?.read?.removedFields || []
 
   // excludedUpdateFields means removed from update inputs
-  const excludedUpdateFields = modelApiConfiguration?.update?.removedFields || []
+  const excludedUpdateFields = modelApiConfiguration?.update?.removedFields?.map((rf) => {
+    if (typeof rf === 'string') {
+      return rf
+    } else {
+      return rf.fieldName
+    }
+  }) || []
 
   return intersection<string>(excludedCreateFields, excludedReadFields, excludedUpdateFields)
 }
