@@ -1,4 +1,4 @@
-// import { AccessRule } from './accessRule'
+import { AccessRule } from './genericAccessRule'
 import { ModelDeleteConfiguration, AfterResolverMiddleware } from './modelDeleteConfiguration'
 
 export type FieldResolver = {
@@ -46,5 +46,5 @@ export type ModelConfiguration = {
     read?: ModelReadConfiguration
     update?: ModelUpdateConfiguration
     delete?: ModelDeleteConfiguration
-    // access?: AccessRule[]
+    access?: AccessRule[]
 }

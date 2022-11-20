@@ -1,4 +1,4 @@
 export * from './apiConfig'
 export * from './genericApiConfig'
-export * from './accessRule'
+export * from './genericAccessRule'
 export * from './modelDeleteConfiguration'

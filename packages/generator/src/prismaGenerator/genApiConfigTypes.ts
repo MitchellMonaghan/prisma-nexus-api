@@ -163,7 +163,7 @@ export type ${modelName}ModelConfiguration = {
     read?: ${modelName}ModelReadConfiguration,
     update?: ${modelName}ModelUpdateConfiguration,
     delete?: ModelDeleteConfiguration,
-    // access?: AccessRule[]
+    access?: AccessRule[]
 }`
   }
 
@@ -171,14 +171,14 @@ export type ${modelName}ModelConfiguration = {
 }
 
 export const genApiConfigTypes = async (datamodel: DMMF.Datamodel) => {
-  // const accessRuleTypesPath = join(__dirname, '../../src/_types/accessRule.ts')
-  // const accessRuleTypes = fs.readFileSync(accessRuleTypesPath, 'utf8')
+  const accessRuleTypesPath = join(__dirname, '../../src/_types/accessRule.ts')
+  const accessRuleTypes = fs.readFileSync(accessRuleTypesPath, 'utf8')
 
   const modelDeleteConfigurationTypesPath = join(__dirname, '../../src/_types/modelDeleteConfiguration.ts')
   const modelDeleteConfigurationTypes = fs.readFileSync(modelDeleteConfigurationTypesPath, 'utf8')
 
   let contents = ''
-  // contents += accessRuleTypes
+  contents += accessRuleTypes
   contents += modelDeleteConfigurationTypes
   contents += '\n' + genFieldTypes(datamodel.models)
   contents += '\n' + genModelConfigTypes(datamodel.models)
