@@ -88,7 +88,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
   const apiDmmf = await getDMMF({ datamodel: apiSchema })
 
   // Base types
-  const nexusSchema: NexusAcceptedTypeDef[] = []
+  const nexusSchema: (NexusAcceptedTypeDef|undefined)[] = []
 
   const allTypes: string[] = []
   const inputsWithNoFields: string[] = []
@@ -263,8 +263,8 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
       nexusSchema.push(upsertOne(model.name, mutationOutputTypes, modelConfig, inputsWithNoFields))
       nexusSchema.push(updateOne(model.name, mutationOutputTypes, updateConfig, inputsWithNoFields))
       nexusSchema.push(updateMany(model.name, mutationOutputTypes, updateConfig, inputsWithNoFields))
-      nexusSchema.push(deleteOne(model.name, mutationOutputTypes))
-      nexusSchema.push(deleteMany(model.name, mutationOutputTypes))
+      nexusSchema.push(deleteOne(model.name, mutationOutputTypes, inputsWithNoFields))
+      nexusSchema.push(deleteMany(model.name, mutationOutputTypes, inputsWithNoFields))
     }
   })
 

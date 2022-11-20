@@ -1,5 +1,6 @@
 import { DMMF } from '@prisma/generator-helper'
 import { mutationField, nonNull } from 'nexus'
+import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs, getConfiguredFieldResolvers } from '../getNexusArgs'
 import { ModelConfiguration } from '../../_types/genericApiConfig'
@@ -12,6 +13,10 @@ export const upsertOne = (
 ) => {
   const mutationName = `upsertOne${modelName}`
   const args = getNexusOperationArgs(mutationName, mutationOutputTypes, inputsWithNoFields)
+
+  if (isEmpty(args)) {
+    return
+  }
 
   return mutationField(mutationName, {
     type: nonNull(modelName),
