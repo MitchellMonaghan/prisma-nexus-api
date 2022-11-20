@@ -4,13 +4,5 @@
     "editor.defaultFormatter": "dbaeumer.vscode-eslint",
     "[prisma]": {
         "editor.defaultFormatter": "Prisma.prisma"
-    },
-    "json.schemas": [
-        {
-            "fileMatch": [
-                "/apiConfig.json"
-            ],
-            "url": "/packages/usage/src/generated/ApiConfigSchema.json"
-        }
-    ]
+    }
 }
