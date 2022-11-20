@@ -215,6 +215,15 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
     if (allTypes.includes(model.name)) { return }
 
     const modelConfig = settings.apiConfig[model.name]
+    const filteredFields = model.fields.filter((field) => {
+      const excludeFields = modelConfig?.read?.removedFields || []
+      return !excludeFields.includes(field.name)
+    })
+
+    if (filteredFields.length === 0) {
+      return
+    }
+
     const nexusModel = objectType({
       nonNullDefaults: {
         output: true,
@@ -223,11 +232,6 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
       name: model.name,
       description: model.documentation,
       definition (t) {
-        const filteredFields = model.fields.filter((field) => {
-          const excludeFields = modelConfig?.read?.removedFields || []
-          return !excludeFields.includes(field.name)
-        })
-
         filteredFields.forEach((field) => {
           const fieldConfig: FieldConfig = {
             type: field.type as string
