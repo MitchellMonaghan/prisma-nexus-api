@@ -23,6 +23,7 @@ export const updateMany = (
     args,
     resolve: async (parent, args, ctx, info) => {
       const { prisma } = ctx
+
       if (updateConfig) {
         const fieldResolvers = await getConfiguredFieldResolvers(
           parent,
@@ -35,6 +36,11 @@ export const updateMany = (
           ...args.data,
           ...fieldResolvers
         }
+      }
+
+      if (updateConfig.beforeUpdateMany) {
+        const canUpdate = updateConfig.beforeUpdateMany(parent, args, ctx, info)
+        if (!canUpdate) { throw new Error('Unauthorized') }
       }
 
       return prisma[modelName].updateMany(args as any)

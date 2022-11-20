@@ -128,6 +128,8 @@ export type ${modelName}ModelCreateConfiguration = {
     disableCreate?: boolean
     disableUpsert?: boolean
     removedFields?: ${modelName}CreateFields[]
+    beforeCreateOne?: AfterResolverMiddleware
+    beforeUpsertOne?: AfterResolverMiddleware
 }
 
 export type ${modelName}ModelReadConfiguration = {
@@ -138,6 +140,11 @@ export type ${modelName}ModelReadConfiguration = {
     disableFindMany?: boolean
     disableFindUnique?: boolean
     removedFields?: ${modelName}Fields[]
+    beforeAggregate?: AfterResolverMiddleware
+    beforeFindCount?: AfterResolverMiddleware
+    beforeFindFirst?: AfterResolverMiddleware
+    beforeFindMany?: AfterResolverMiddleware
+    beforeFindUnique?: AfterResolverMiddleware
 }
 
 export type ${modelName}ModelUpdateConfiguration = {
@@ -146,6 +153,9 @@ export type ${modelName}ModelUpdateConfiguration = {
     disableUpdateMany?: boolean
     disableUpsert?: boolean
     removedFields?: ${modelName}UpdateFields[]
+    beforeUpdateOne?: AfterResolverMiddleware
+    beforeUpdateMany?: AfterResolverMiddleware
+    beforeUpsertOne?: AfterResolverMiddleware
 }
 
 export type ${modelName}ModelConfiguration = {
@@ -153,7 +163,7 @@ export type ${modelName}ModelConfiguration = {
     read?: ${modelName}ModelReadConfiguration,
     update?: ${modelName}ModelUpdateConfiguration,
     delete?: ModelDeleteConfiguration,
-    access?: AccessRule[]
+    // access?: AccessRule[]
 }`
   }
 
@@ -161,15 +171,15 @@ export type ${modelName}ModelConfiguration = {
 }
 
 export const genApiConfigTypes = async (datamodel: DMMF.Datamodel) => {
-  const accessRuleTypesPath = join(__dirname, '../../src/_types/accessRule.ts')
-  const accessRuleTypes = fs.readFileSync(accessRuleTypesPath, 'utf8')
+  // const accessRuleTypesPath = join(__dirname, '../../src/_types/accessRule.ts')
+  // const accessRuleTypes = fs.readFileSync(accessRuleTypesPath, 'utf8')
 
   const modelDeleteConfigurationTypesPath = join(__dirname, '../../src/_types/modelDeleteConfiguration.ts')
   const modelDeleteConfigurationTypes = fs.readFileSync(modelDeleteConfigurationTypesPath, 'utf8')
 
   let contents = ''
-  contents += accessRuleTypes
-  contents += '\n' + modelDeleteConfigurationTypes
+  // contents += accessRuleTypes
+  contents += modelDeleteConfigurationTypes
   contents += '\n' + genFieldTypes(datamodel.models)
   contents += '\n' + genModelConfigTypes(datamodel.models)
   contents += '\n\n' + genApiConfigType(datamodel.models)

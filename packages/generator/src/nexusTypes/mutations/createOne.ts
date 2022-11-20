@@ -39,7 +39,11 @@ export const createOne = (
         }
       }
 
-      // TODO: Test that all field removals are working as expected
+      if (createConfig.beforeCreateOne) {
+        const canCreate = createConfig.beforeCreateOne(parent, args, ctx, info)
+        if (!canCreate) { throw new Error('Unauthorized') }
+      }
+
       return prisma[modelName].create({
         ...args,
         ...select

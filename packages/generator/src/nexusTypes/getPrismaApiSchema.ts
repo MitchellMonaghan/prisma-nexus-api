@@ -9,10 +9,10 @@ import {
 export const isModelDisabled = (modelApiConfiguration?: ModelConfiguration) => {
   if (!modelApiConfiguration) { return false }
 
-  const upsertDisabled = modelApiConfiguration?.create?.disableUpsert ||
-    modelApiConfiguration?.update?.disableUpsert
+  const upsertDisabled = modelApiConfiguration?.create?.disableUpsertOne ||
+    modelApiConfiguration?.update?.disableUpsertOne
 
-  const allCreatesDisabled = modelApiConfiguration?.create?.disableCreate && upsertDisabled
+  const allCreatesDisabled = modelApiConfiguration?.create?.disableCreateOne && upsertDisabled
 
   const createDisabled = modelApiConfiguration?.create?.disableAll || allCreatesDisabled
 

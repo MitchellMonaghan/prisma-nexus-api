@@ -57,6 +57,15 @@ export const upsertOne = (
         }
       }
 
+      if (createConfig.beforeUpsertOne) {
+        const canCreate = createConfig.beforeUpsertOne(parent, args, ctx, info)
+        if (!canCreate) { throw new Error('Unauthorized') }
+      }
+      if (updateConfig.beforeUpsertOne) {
+        const canUpdate = updateConfig.beforeUpsertOne(parent, args, ctx, info)
+        if (!canUpdate) { throw new Error('Unauthorized') }
+      }
+
       if (args.where) {
         return prisma[modelName].upsert({
           ...args,

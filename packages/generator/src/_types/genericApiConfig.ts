@@ -1,5 +1,5 @@
-import { AccessRule } from './accessRule'
-import { ModelDeleteConfiguration } from './modelDeleteConfiguration'
+// import { AccessRule } from './accessRule'
+import { ModelDeleteConfiguration, AfterResolverMiddleware } from './modelDeleteConfiguration'
 
 export type FieldResolver = {
     fieldName: string,
@@ -8,9 +8,11 @@ export type FieldResolver = {
 
 export type ModelCreateConfiguration = {
     disableAll?: boolean
-    disableCreate?: boolean
-    disableUpsert?: boolean
+    disableCreateOne?: boolean
+    disableUpsertOne?: boolean
     removedFields?: (string | FieldResolver)[]
+    beforeCreateOne?: AfterResolverMiddleware
+    beforeUpsertOne?: AfterResolverMiddleware
 }
 
 export type ModelReadConfiguration = {
@@ -21,14 +23,22 @@ export type ModelReadConfiguration = {
     disableFindMany?: boolean
     disableFindUnique?: boolean
     removedFields?: string[]
+    beforeAggregate?: AfterResolverMiddleware
+    beforeFindCount?: AfterResolverMiddleware
+    beforeFindFirst?: AfterResolverMiddleware
+    beforeFindMany?: AfterResolverMiddleware
+    beforeFindUnique?: AfterResolverMiddleware
 }
 
 export type ModelUpdateConfiguration = {
     disableAll?: boolean
     disableUpdateOne?: boolean
     disableUpdateMany?: boolean
-    disableUpsert?: boolean
+    disableUpsertOne?: boolean
     removedFields?: (string | FieldResolver)[]
+    beforeUpdateOne?: AfterResolverMiddleware
+    beforeUpdateMany?: AfterResolverMiddleware
+    beforeUpsertOne?: AfterResolverMiddleware
 }
 
 export type ModelConfiguration = {
@@ -36,5 +46,5 @@ export type ModelConfiguration = {
     read?: ModelReadConfiguration
     update?: ModelUpdateConfiguration
     delete?: ModelDeleteConfiguration
-    access?: AccessRule[]
+    // access?: AccessRule[]
 }

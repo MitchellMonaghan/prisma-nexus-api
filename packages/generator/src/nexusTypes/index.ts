@@ -280,7 +280,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
     if (mutationOutputTypes) {
       const createConfig = modelConfig?.create || {}
       if (!createConfig.disableAll) {
-        if (!createConfig.disableCreate) {
+        if (!createConfig.disableCreateOne) {
           nexusSchema.push(createOne(model.name, mutationOutputTypes, createConfig, inputsWithNoFields))
         }
       }
@@ -297,9 +297,9 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
       }
 
       if (!(createConfig.disableAll ||
-        createConfig.disableUpsert ||
+        createConfig.disableUpsertOne ||
         updateConfig.disableAll ||
-        updateConfig.disableUpsert)
+        updateConfig.disableUpsertOne)
       ) {
         nexusSchema.push(upsertOne(model.name, mutationOutputTypes, modelConfig, inputsWithNoFields))
       }
@@ -307,10 +307,10 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
       const deleteConfig = modelConfig?.delete || {}
       if (!deleteConfig.disableAll) {
         if (!deleteConfig.disableDeleteOne) {
-          nexusSchema.push(deleteOne(model.name, mutationOutputTypes, inputsWithNoFields))
+          nexusSchema.push(deleteOne(model.name, mutationOutputTypes, deleteConfig, inputsWithNoFields))
         }
         if (!deleteConfig.disableDeleteMany) {
-          nexusSchema.push(deleteMany(model.name, mutationOutputTypes, inputsWithNoFields))
+          nexusSchema.push(deleteMany(model.name, mutationOutputTypes, deleteConfig, inputsWithNoFields))
         }
       }
     }

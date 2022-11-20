@@ -39,6 +39,11 @@ export const updateOne = (
         }
       }
 
+      if (updateConfig.beforeUpdateOne) {
+        const canUpdate = updateConfig.beforeUpdateOne(parent, args, ctx, info)
+        if (!canUpdate) { throw new Error('Unauthorized') }
+      }
+
       return prisma[modelName].update({
         ...args,
         ...select
