@@ -9,10 +9,30 @@ import {
 export const isModelDisabled = (modelApiConfiguration?: ModelConfiguration) => {
   if (!modelApiConfiguration) { return false }
 
-  const createDisabled = modelApiConfiguration?.create?.disabled
-  const readDisabled = modelApiConfiguration?.read?.disabled
-  const updateDisabled = modelApiConfiguration?.update?.disabled
-  const deleteDisabled = modelApiConfiguration?.delete?.disabled
+  const upsertDisabled = modelApiConfiguration?.create?.disableUpsert ||
+    modelApiConfiguration?.update?.disableUpsert
+
+  const allCreatesDisabled = modelApiConfiguration?.create?.disableCreate && upsertDisabled
+
+  const createDisabled = modelApiConfiguration?.create?.disableAll || allCreatesDisabled
+
+  const allReadsDisabled = modelApiConfiguration?.read?.disableAggregate &&
+    modelApiConfiguration?.read?.disableFindCount &&
+    modelApiConfiguration?.read?.disableFindFirst &&
+    modelApiConfiguration?.read?.disableFindMany &&
+    modelApiConfiguration?.read?.disableFindUnique
+
+  const readDisabled = modelApiConfiguration?.read?.disableAll || allReadsDisabled
+
+  const allUpdatesDisabled = modelApiConfiguration?.update?.disableUpdateOne &&
+  modelApiConfiguration?.update?.disableUpdateMany && upsertDisabled
+
+  const updateDisabled = modelApiConfiguration?.update?.disableAll || allUpdatesDisabled
+
+  const allDeletesDisabled = modelApiConfiguration?.delete?.disableDeleteOne &&
+  modelApiConfiguration?.delete.disableDeleteMany
+
+  const deleteDisabled = modelApiConfiguration?.delete?.disableAll || allDeletesDisabled
 
   const modelDisabled = createDisabled &&
       readDisabled &&

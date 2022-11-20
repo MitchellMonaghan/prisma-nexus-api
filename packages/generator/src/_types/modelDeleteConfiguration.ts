@@ -1,3 +1,5 @@
 export type ModelDeleteConfiguration = {
-    disabled?: boolean
+    disableAll?: boolean
+    disableDeleteOne?: boolean
+    disableDeleteMany?: boolean
 }

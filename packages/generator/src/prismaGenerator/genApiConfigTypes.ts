@@ -124,17 +124,27 @@ const genModelConfigTypes = (models: DMMF.Model[]) => {
     const modelName = modelNames[i]
     content += (i === 0 ? '' : '\n') + `
 export type ${modelName}ModelCreateConfiguration = {
-    disabled?: boolean
+    disableAll?: boolean
+    disableCreate?: boolean
+    disableUpsert?: boolean
     removedFields?: ${modelName}CreateFields[]
 }
 
 export type ${modelName}ModelReadConfiguration = {
-    disabled?: boolean
+    disableAll?: boolean
+    disableAggregate?: boolean
+    disableFindCount?: boolean
+    disableFindFirst?: boolean
+    disableFindMany?: boolean
+    disableFindUnique?: boolean
     removedFields?: ${modelName}Fields[]
 }
 
 export type ${modelName}ModelUpdateConfiguration = {
-    disabled?: boolean
+    disableAll?: boolean
+    disableUpdateOne?: boolean
+    disableUpdateMany?: boolean
+    disableUpsert?: boolean
     removedFields?: ${modelName}UpdateFields[]
 }
 

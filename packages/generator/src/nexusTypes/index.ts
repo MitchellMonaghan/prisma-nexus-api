@@ -253,36 +253,65 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
     // Queries
     if (queryOutputTypes) {
       const readConfig = modelConfig?.read || {}
-      if (!readConfig.disabled) {
-        nexusSchema.push(aggregate(model.name, queryOutputTypes, inputsWithNoFields))
-        nexusSchema.push(findCount(model.name, queryOutputTypes, inputsWithNoFields))
-        nexusSchema.push(findFirst(model.name, queryOutputTypes, inputsWithNoFields))
-        nexusSchema.push(findMany(model.name, queryOutputTypes, inputsWithNoFields))
-        nexusSchema.push(findUnique(model.name, queryOutputTypes, inputsWithNoFields))
+      if (!readConfig.disableAll) {
+        if (!readConfig.disableAggregate) {
+          nexusSchema.push(aggregate(model.name, queryOutputTypes, inputsWithNoFields))
+        }
+
+        if (!readConfig.disableFindCount) {
+          nexusSchema.push(findCount(model.name, queryOutputTypes, inputsWithNoFields))
+        }
+
+        if (!readConfig.disableFindFirst) {
+          nexusSchema.push(findFirst(model.name, queryOutputTypes, inputsWithNoFields))
+        }
+
+        if (!readConfig.disableFindMany) {
+          nexusSchema.push(findMany(model.name, queryOutputTypes, inputsWithNoFields))
+        }
+
+        if (!readConfig.disableFindUnique) {
+          nexusSchema.push(findUnique(model.name, queryOutputTypes, inputsWithNoFields))
+        }
       }
     }
 
     // Mutations
     if (mutationOutputTypes) {
       const createConfig = modelConfig?.create || {}
-      if (!createConfig.disabled) {
-        nexusSchema.push(createOne(model.name, mutationOutputTypes, createConfig, inputsWithNoFields))
+      if (!createConfig.disableAll) {
+        if (!createConfig.disableCreate) {
+          nexusSchema.push(createOne(model.name, mutationOutputTypes, createConfig, inputsWithNoFields))
+        }
       }
 
       const updateConfig = modelConfig?.update || {}
-      if (!updateConfig.disabled) {
-        nexusSchema.push(updateOne(model.name, mutationOutputTypes, updateConfig, inputsWithNoFields))
-        nexusSchema.push(updateMany(model.name, mutationOutputTypes, updateConfig, inputsWithNoFields))
+      if (!updateConfig.disableAll) {
+        if (!updateConfig.disableUpdateOne) {
+          nexusSchema.push(updateOne(model.name, mutationOutputTypes, updateConfig, inputsWithNoFields))
+        }
+
+        if (!updateConfig.disableUpdateMany) {
+          nexusSchema.push(updateMany(model.name, mutationOutputTypes, updateConfig, inputsWithNoFields))
+        }
       }
 
-      if (!(createConfig.disabled || updateConfig.disabled)) {
+      if (!(createConfig.disableAll ||
+        createConfig.disableUpsert ||
+        updateConfig.disableAll ||
+        updateConfig.disableUpsert)
+      ) {
         nexusSchema.push(upsertOne(model.name, mutationOutputTypes, modelConfig, inputsWithNoFields))
       }
 
       const deleteConfig = modelConfig?.delete || {}
-      if (!deleteConfig.disabled) {
-        nexusSchema.push(deleteOne(model.name, mutationOutputTypes, inputsWithNoFields))
-        nexusSchema.push(deleteMany(model.name, mutationOutputTypes, inputsWithNoFields))
+      if (!deleteConfig.disableAll) {
+        if (!deleteConfig.disableDeleteOne) {
+          nexusSchema.push(deleteOne(model.name, mutationOutputTypes, inputsWithNoFields))
+        }
+        if (!deleteConfig.disableDeleteMany) {
+          nexusSchema.push(deleteMany(model.name, mutationOutputTypes, inputsWithNoFields))
+        }
       }
     }
   })

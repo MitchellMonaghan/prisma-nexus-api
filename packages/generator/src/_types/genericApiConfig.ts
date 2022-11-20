@@ -7,17 +7,27 @@ export type FieldResolver = {
 }
 
 export type ModelCreateConfiguration = {
-    disabled?: boolean
+    disableAll?: boolean
+    disableCreate?: boolean
+    disableUpsert?: boolean
     removedFields?: (string | FieldResolver)[]
 }
 
 export type ModelReadConfiguration = {
-    disabled?: boolean
+    disableAll?: boolean
+    disableAggregate?: boolean
+    disableFindCount?: boolean
+    disableFindFirst?: boolean
+    disableFindMany?: boolean
+    disableFindUnique?: boolean
     removedFields?: string[]
 }
 
 export type ModelUpdateConfiguration = {
-    disabled?: boolean
+    disableAll?: boolean
+    disableUpdateOne?: boolean
+    disableUpdateMany?: boolean
+    disableUpsert?: boolean
     removedFields?: (string | FieldResolver)[]
 }
 
