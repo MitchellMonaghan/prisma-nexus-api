@@ -1,4 +1,4 @@
-# prisma-generator-quick-micro
+# prisma-nexus-api
 
 > The intention of this project is the following:
 > 1. Single package with prisma generator and nexus plugin

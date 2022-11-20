@@ -2,7 +2,7 @@ import path from 'path'
 import { ApolloServer } from '@apollo/server'
 import { startStandaloneServer } from '@apollo/server/standalone'
 import { makeSchema } from 'nexus'
-import { getNexusTypes, ApiConfig } from '@quickmicro/prisma-generator-quick-micro'
+import { getNexusTypes, ApiConfig } from 'prisma-nexus-api'
 import { paljs } from '@paljs/nexus'
 import { PrismaClient } from '@prisma/client'
 

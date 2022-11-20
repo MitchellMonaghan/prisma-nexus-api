@@ -1,5 +1,5 @@
 generator quickMicro {
-  provider = "prisma-generator-quick-micro"
+  provider = "prisma-nexus-api"
 }
 
 generator client {
