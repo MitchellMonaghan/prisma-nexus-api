@@ -252,23 +252,38 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
 
     // Queries
     if (queryOutputTypes) {
-      nexusSchema.push(aggregate(model.name, queryOutputTypes, inputsWithNoFields))
-      nexusSchema.push(findCount(model.name, queryOutputTypes, inputsWithNoFields))
-      nexusSchema.push(findFirst(model.name, queryOutputTypes, inputsWithNoFields))
-      nexusSchema.push(findMany(model.name, queryOutputTypes, inputsWithNoFields))
-      nexusSchema.push(findUnique(model.name, queryOutputTypes, inputsWithNoFields))
+      const readConfig = modelConfig?.read || {}
+      if (!readConfig.disabled) {
+        nexusSchema.push(aggregate(model.name, queryOutputTypes, inputsWithNoFields))
+        nexusSchema.push(findCount(model.name, queryOutputTypes, inputsWithNoFields))
+        nexusSchema.push(findFirst(model.name, queryOutputTypes, inputsWithNoFields))
+        nexusSchema.push(findMany(model.name, queryOutputTypes, inputsWithNoFields))
+        nexusSchema.push(findUnique(model.name, queryOutputTypes, inputsWithNoFields))
+      }
     }
 
     // Mutations
     if (mutationOutputTypes) {
       const createConfig = modelConfig?.create || {}
+      if (!createConfig.disabled) {
+        nexusSchema.push(createOne(model.name, mutationOutputTypes, createConfig, inputsWithNoFields))
+      }
+
       const updateConfig = modelConfig?.update || {}
-      nexusSchema.push(createOne(model.name, mutationOutputTypes, createConfig, inputsWithNoFields))
-      nexusSchema.push(upsertOne(model.name, mutationOutputTypes, modelConfig, inputsWithNoFields))
-      nexusSchema.push(updateOne(model.name, mutationOutputTypes, updateConfig, inputsWithNoFields))
-      nexusSchema.push(updateMany(model.name, mutationOutputTypes, updateConfig, inputsWithNoFields))
-      nexusSchema.push(deleteOne(model.name, mutationOutputTypes, inputsWithNoFields))
-      nexusSchema.push(deleteMany(model.name, mutationOutputTypes, inputsWithNoFields))
+      if (!updateConfig.disabled) {
+        nexusSchema.push(updateOne(model.name, mutationOutputTypes, updateConfig, inputsWithNoFields))
+        nexusSchema.push(updateMany(model.name, mutationOutputTypes, updateConfig, inputsWithNoFields))
+      }
+
+      if (!(createConfig.disabled || updateConfig.disabled)) {
+        nexusSchema.push(upsertOne(model.name, mutationOutputTypes, modelConfig, inputsWithNoFields))
+      }
+
+      const deleteConfig = modelConfig?.delete || {}
+      if (!deleteConfig.disabled) {
+        nexusSchema.push(deleteOne(model.name, mutationOutputTypes, inputsWithNoFields))
+        nexusSchema.push(deleteMany(model.name, mutationOutputTypes, inputsWithNoFields))
+      }
     }
   })
 
