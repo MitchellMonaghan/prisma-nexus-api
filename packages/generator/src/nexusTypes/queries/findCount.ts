@@ -2,9 +2,13 @@ import { DMMF } from '@prisma/generator-helper'
 import { queryField, nonNull } from 'nexus'
 import { getNexusOperationArgs } from '../getNexusArgs'
 
-export const findCount = (modelName: string, queryOutputTypes: DMMF.OutputType) => {
+export const findCount = (
+  modelName: string,
+  queryOutputTypes: DMMF.OutputType,
+  inputsWithNoFields:string[]
+) => {
   const queryName = `findMany${modelName}`
-  const args = getNexusOperationArgs(queryName, queryOutputTypes)
+  const args = getNexusOperationArgs(queryName, queryOutputTypes, inputsWithNoFields)
 
   return queryField(`${queryName}Count`, {
     type: nonNull('Int'),

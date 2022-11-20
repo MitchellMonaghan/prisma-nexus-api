@@ -115,10 +115,12 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
 
   // Input types
   const modelNames = apiDmmf.datamodel.models.map(m => m.name)
-  const inputObjectTypes = [...data.inputObjectTypes.prisma]
+  const inputObjectTypes = [...data.inputObjectTypes.prisma].reverse()
   if (data.inputObjectTypes.model) { inputObjectTypes.push(...data.inputObjectTypes.model) }
   inputObjectTypes.forEach((input) => {
-    const inputFields = filterInputsWithApiConfig(settings.apiConfig, input, modelNames)
+    const modelName = getMatchingModel(input.name, modelNames)
+    let inputFields = filterInputsWithApiConfig(modelName, input, settings.apiConfig)
+    inputFields = inputFields.filter(f => !inputsWithNoFields.includes(f.inputTypes[0].type.toString()))
 
     if (inputFields.length === 0) {
       inputsWithNoFields.push(input.name)
@@ -161,10 +163,22 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
   })
 
   // Output types
-  data.outputObjectTypes.prisma
+  const outputsWithNoFields: string[] = []
+  const outputObjectTypes = [...data.outputObjectTypes.prisma].reverse()
+  outputObjectTypes
     .filter((type) => type.name.includes('Aggregate') || type.name.endsWith('CountOutputType'))
     .forEach((type) => {
       if (allTypes.includes(type.name)) { return }
+
+      const modelName = getMatchingModel(type.name, modelNames)
+      const modelConfig = settings.apiConfig[modelName] || {}
+      const removedFields = modelConfig?.read?.removedFields || []
+
+      const outputFields = type.fields.filter(f => !(removedFields.includes(f.name) || outputsWithNoFields.includes(f.outputType.type.toString())))
+      if (outputFields.length === 0) {
+        outputsWithNoFields.push(type.name)
+        return
+      }
 
       const outputType = objectType({
         nonNullDefaults: {
@@ -172,7 +186,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
         },
         name: type.name,
         definition (t) {
-          type.fields.forEach((field) => {
+          outputFields.forEach((field) => {
             const fieldConfig: FieldConfig = {
               type: field.outputType.type as string
             }
@@ -234,11 +248,11 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
 
     // Queries
     if (queryOutputTypes) {
-      nexusSchema.push(aggregate(model.name, queryOutputTypes))
-      nexusSchema.push(findCount(model.name, queryOutputTypes))
-      nexusSchema.push(findFirst(model.name, queryOutputTypes))
-      nexusSchema.push(findMany(model.name, queryOutputTypes))
-      nexusSchema.push(findUnique(model.name, queryOutputTypes))
+      nexusSchema.push(aggregate(model.name, queryOutputTypes, inputsWithNoFields))
+      nexusSchema.push(findCount(model.name, queryOutputTypes, inputsWithNoFields))
+      nexusSchema.push(findFirst(model.name, queryOutputTypes, inputsWithNoFields))
+      nexusSchema.push(findMany(model.name, queryOutputTypes, inputsWithNoFields))
+      nexusSchema.push(findUnique(model.name, queryOutputTypes, inputsWithNoFields))
     }
 
     // Mutations
@@ -257,15 +271,18 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
   return nexusSchema
 }
 
-const filterInputsWithApiConfig = (apiConfig: ApiConfig, input: DMMF.InputType, modelNames: string[]) => {
-  const matchingModelNames = modelNames.filter(mn => input.name.startsWith(mn))
-  const model = maxBy(matchingModelNames, (mn) => mn.length)
+const getMatchingModel = (prismaTypeName:string, modelNames: string[]) => {
+  const matchingModelNames = modelNames.filter(mn => prismaTypeName.startsWith(mn))
+  const model = maxBy(matchingModelNames, (mn) => mn.length) as string
+  return model
+}
 
-  if (!model) {
+const filterInputsWithApiConfig = (modelName:string, input: DMMF.InputType, apiConfig: ApiConfig) => {
+  if (!modelName) {
     return input.fields
   }
 
-  const config = apiConfig[model as keyof ApiConfig]
+  const config = apiConfig[modelName as keyof ApiConfig]
 
   const isCreateInput = input.name.toLowerCase().includes('create')
   const removedCreateFields = config?.create?.removedFields?.map((rf) => {

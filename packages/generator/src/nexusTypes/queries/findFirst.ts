@@ -2,9 +2,13 @@ import { DMMF } from '@prisma/generator-helper'
 import { queryField } from 'nexus'
 import { getNexusOperationArgs } from '../getNexusArgs'
 
-export const findFirst = (modelName: string, queryOutputTypes: DMMF.OutputType) => {
+export const findFirst = (
+  modelName: string,
+  queryOutputTypes: DMMF.OutputType,
+  inputsWithNoFields:string[]
+) => {
   const queryName = `findFirst${modelName}`
-  const args = getNexusOperationArgs(queryName, queryOutputTypes)
+  const args = getNexusOperationArgs(queryName, queryOutputTypes, inputsWithNoFields)
 
   return queryField(queryName, {
     type: modelName,
