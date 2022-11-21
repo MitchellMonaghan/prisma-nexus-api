@@ -1,5 +1,11 @@
 import { AfterResolverMiddleware } from './afterResolverMiddleware'
-import { AccessRule } from './genericAccessRule'
+import {
+  AndOperator,
+  OrOperator,
+  NotOperator,
+  ExistsOperator,
+  PropertySelector
+} from './genericPropertySelector'
 
 export type FieldResolver = {
     fieldName: string,
@@ -13,7 +19,7 @@ export type ModelCreateConfiguration = {
     removedFields?: (string | FieldResolver)[]
     beforeCreateOne?: AfterResolverMiddleware
     beforeUpsertOne?: AfterResolverMiddleware
-    access?: AccessRule[]
+    access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
 }
 
 export type ModelReadConfiguration = {
@@ -29,7 +35,7 @@ export type ModelReadConfiguration = {
     beforeFindFirst?: AfterResolverMiddleware
     beforeFindMany?: AfterResolverMiddleware
     beforeFindUnique?: AfterResolverMiddleware
-    access?: AccessRule[]
+    access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
 }
 
 export type ModelUpdateConfiguration = {
@@ -41,7 +47,7 @@ export type ModelUpdateConfiguration = {
     beforeUpdateOne?: AfterResolverMiddleware
     beforeUpdateMany?: AfterResolverMiddleware
     beforeUpsertOne?: AfterResolverMiddleware
-    access?: AccessRule[]
+    access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
 }
 
 export type ModelDeleteConfiguration = {
@@ -50,7 +56,7 @@ export type ModelDeleteConfiguration = {
     disableDeleteMany?: boolean
     beforeDeleteOne?: AfterResolverMiddleware
     beforeDeleteMany?: AfterResolverMiddleware
-    access?: AccessRule[]
+    access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
 }
 
 export type ModelConfiguration = {

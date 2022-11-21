@@ -120,6 +120,14 @@ const genModelConfigTypes = (models: DMMF.Model[]) => {
   let content = ''
   for (let i = 0; i < modelNames.length; i++) {
     const modelName = modelNames[i]
+    const otherModels = modelNames.filter(m => m !== modelName).map(m => `${m}ExistsOperator`)
+    const otherModelExistsOperators = otherModels.join('|')
+    const logicOperators = ['AndOperator', 'OrOperator', 'NotOperator']
+      .map(o => `${modelName}${o}`)
+      .join('|')
+    const modelPropertySelector = `${modelName}PropertySelector`
+    const fullAccessRuleType = `(${logicOperators}|${otherModelExistsOperators}|${modelPropertySelector})[]`
+
     content += (i === 0 ? '' : '\n') + `
 export type ${modelName}ModelCreateConfiguration = {
     disableAll?: boolean
@@ -128,7 +136,7 @@ export type ${modelName}ModelCreateConfiguration = {
     removedFields?: ${modelName}CreateFields[]
     beforeCreateOne?: AfterResolverMiddleware
     beforeUpsertOne?: AfterResolverMiddleware
-    access?: ${modelName}AccessRule[]
+    access?: ${fullAccessRuleType}
 }
 
 export type ${modelName}ModelReadConfiguration = {
@@ -144,7 +152,7 @@ export type ${modelName}ModelReadConfiguration = {
     beforeFindFirst?: AfterResolverMiddleware
     beforeFindMany?: AfterResolverMiddleware
     beforeFindUnique?: AfterResolverMiddleware
-    access?: ${modelName}AccessRule[]
+    access?: ${fullAccessRuleType}
 }
 
 export type ${modelName}ModelUpdateConfiguration = {
@@ -156,7 +164,7 @@ export type ${modelName}ModelUpdateConfiguration = {
     beforeUpdateOne?: AfterResolverMiddleware
     beforeUpdateMany?: AfterResolverMiddleware
     beforeUpsertOne?: AfterResolverMiddleware
-    access?: ${modelName}AccessRule[]
+    access?: ${fullAccessRuleType}
 }
 
 export type ${modelName}ModelDeleteConfiguration = {
@@ -165,14 +173,14 @@ export type ${modelName}ModelDeleteConfiguration = {
   disableDeleteMany?: boolean
   beforeDeleteOne?: AfterResolverMiddleware
   beforeDeleteMany?: AfterResolverMiddleware
-  access?: ${modelName}AccessRule[]
+  access?: ${fullAccessRuleType}
 }
 
 export type ${modelName}ModelConfiguration = {
-    create?: ${modelName}ModelCreateConfiguration,
-    read?: ${modelName}ModelReadConfiguration,
-    update?: ${modelName}ModelUpdateConfiguration,
-    delete?: ${modelName}ModelDeleteConfiguration
+  create?: ${modelName}ModelCreateConfiguration,
+  read?: ${modelName}ModelReadConfiguration,
+  update?: ${modelName}ModelUpdateConfiguration,
+  delete?: ${modelName}ModelDeleteConfiguration
 }`
   }
 

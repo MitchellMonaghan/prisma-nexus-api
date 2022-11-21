@@ -1,19 +1,8 @@
 // Property Selectors
-// and
-// or
-// not
-// exists
-// modelFields (id, email, name etc)
 // sessionProp
 
 // Operators
 // column (ceq, cgte etc operators, price > quantity)
-
-// const example = {
-//   property: 'id',
-//   operator: 'eq',
-//   value: '1342124314'
-// }
 
 export type StringOperatorOptions = 'eq' | 'neq' | 'in' | 'nin' | 'contains' | 'ncontains' | 'regex' | 'nregex'
 export type NumberOperatorOptions = 'eq' | 'neq' | 'gt' |'lt' |'gte' |'lte' | 'in' | 'nin'
@@ -81,23 +70,47 @@ type NumberOperators = EqualOperator<number> | NotEqualOperator<number> | Greate
 type BooleanOperators = EqualOperator<boolean> | NotEqualOperator<boolean> | InOperator<number> | NotInOperator<number>
 type DateOperators = EqualOperator<Date> | NotEqualOperator<Date> | GreaterThanOperator<Date> | GreaterThanOrEqualOperator<Date> | LessThanOperator<Date> | LessThanOrEqualOperator<Date> | InOperator<Date> | NotInOperator<Date>
 
-export type AccessRule = {
+export type PropertySelector = {
     property: string
     operator: StringOperators | NumberOperators | BooleanOperators| DateOperators
 }
 
-export type NumberAccessRule = AccessRule & {
+// Logic Operators
+export type AndOperator = {
+    name: 'and'
+    // eslint-disable-next-line no-use-before-define
+    value: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
+}
+export type OrOperator = {
+    name: 'or'
+    // eslint-disable-next-line no-use-before-define
+    value: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
+}
+export type NotOperator = {
+    name: 'not'
+    // eslint-disable-next-line no-use-before-define
+    value: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
+}
+
+// Exists
+export type ExistsOperator = {
+    name: 'exists'
+    table: string
+    where: (AndOperator|OrOperator|NotOperator|PropertySelector)[]
+}
+
+export type NumberAccessRule = PropertySelector & {
     operator: NumberOperators
 }
 
-export type StringAccessRule = AccessRule & {
+export type StringAccessRule = PropertySelector & {
     operator: StringOperators
 }
 
-export type BooleanAccessRule = AccessRule & {
+export type BooleanAccessRule = PropertySelector & {
     operator: BooleanOperators
 }
 
-export type DateAccessRule = AccessRule & {
+export type DateAccessRule = PropertySelector & {
     operator: DateOperators
 }

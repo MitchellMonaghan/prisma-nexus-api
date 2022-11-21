@@ -12,6 +12,14 @@ const genFieldTypes = (models: DMMF.Model[]) => {
   for (let i = 0; i < models.length; i++) {
     const model = models[i]
     const modelName = model.name
+    const otherModels = models.filter(m => m.name !== modelName).map(m => `${m.name}ExistsOperator`)
+    const otherModelExistsOperators = otherModels.join('|')
+    const logicOperators = ['AndOperator', 'OrOperator', 'NotOperator']
+      .map(o => `${modelName}${o}`)
+      .join('|')
+    const modelPropertySelector = `${modelName}PropertySelector`
+    const fullAccessRuleType = `(${logicOperators}|${otherModelExistsOperators}|${modelPropertySelector})[]`
+
     const accessRuleTypes = []
     content += (i === 0 ? '' : '\n\n')
 
@@ -67,18 +75,46 @@ const genFieldTypes = (models: DMMF.Model[]) => {
 }`
     }
 
-    content += `\nexport type ${modelName}AccessRule = ${accessRuleTypes.join('|')}`
+    content += `
+// eslint-disable-next-line no-use-before-define
+export type ${modelPropertySelector} = ${accessRuleTypes.join('|')}
+
+export type ${modelName}AndOperator = {
+  property: 'and'
+  // eslint-disable-next-line no-use-before-define
+  value: ${fullAccessRuleType}
+}
+export type ${modelName}OrOperator = {
+  property: 'or'
+  // eslint-disable-next-line no-use-before-define
+  value: ${fullAccessRuleType}
+}
+export type ${modelName}NotOperator = {
+  property: 'not'
+  // eslint-disable-next-line no-use-before-define
+  value: ${fullAccessRuleType}
+}
+
+export type ${modelName}ExistsOperator = {
+  property: 'exists'
+  table: '${modelName}'
+  where: (${logicOperators}|${modelPropertySelector})[]
+}`
   }
 
   return content
 }
 
-export const genApiConfigAccessRules = async (datamodel: DMMF.Datamodel) => {
-  const genericAccessRuleTypesPath = join(__dirname, '../../src/_types/genericAccessRule.ts')
-  const genericAccessRuleTypes = fs.readFileSync(genericAccessRuleTypesPath, 'utf8')
+const getModelTypes = (models: DMMF.Model[]) => {
+  return `export type Models = ${models.map(m => `'${m.name}'`).join('|')}`
+}
 
-  let contents = ''
-  contents += genericAccessRuleTypes
+export const genApiConfigAccessRules = async (datamodel: DMMF.Datamodel) => {
+  const genericPropertySelectorTypePath = join(__dirname, '../../src/_types/genericPropertySelector.ts')
+  const genericPropertySelectorType = fs.readFileSync(genericPropertySelectorTypePath, 'utf8')
+
+  let contents = getModelTypes(datamodel.models)
+  contents += '\n' + genericPropertySelectorType
   contents += '\n' + genFieldTypes(datamodel.models)
   contents += '\n'
 
