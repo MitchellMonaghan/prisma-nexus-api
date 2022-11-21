@@ -2,8 +2,6 @@ import fs from 'fs'
 import { join } from 'path'
 import { DMMF } from '@prisma/generator-helper'
 
-import { writeFileSafely } from '../utils/writeFileSafely'
-
 const getStringFieldsTypeName = (modelName:string) => `${modelName}StringFields`
 const getNumberFieldsTypeName = (modelName:string) => `${modelName}NumberFields`
 const getBoleanFieldsTypeName = (modelName:string) => `${modelName}BooleanFields`
@@ -84,6 +82,5 @@ export const genApiConfigAccessRules = async (datamodel: DMMF.Datamodel) => {
   contents += '\n' + genFieldTypes(datamodel.models)
   contents += '\n'
 
-  const pluginSettingsTypePath = join(__dirname, '../_types/accessRule.d.ts')
-  await writeFileSafely(pluginSettingsTypePath, contents)
+  return contents
 }

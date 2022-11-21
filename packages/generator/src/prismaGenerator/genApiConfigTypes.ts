@@ -1,8 +1,6 @@
 import fs from 'fs'
 import { join } from 'path'
 import { DMMF } from '@prisma/generator-helper'
-
-import { writeFileSafely } from '../utils/writeFileSafely'
 import { capitalize } from 'lodash'
 
 const getTypeScriptTypeFromPrismaType = (prismaType:string) => {
@@ -130,6 +128,7 @@ export type ${modelName}ModelCreateConfiguration = {
     removedFields?: ${modelName}CreateFields[]
     beforeCreateOne?: AfterResolverMiddleware
     beforeUpsertOne?: AfterResolverMiddleware
+    access?: ${modelName}AccessRule[]
 }
 
 export type ${modelName}ModelReadConfiguration = {
@@ -145,6 +144,7 @@ export type ${modelName}ModelReadConfiguration = {
     beforeFindFirst?: AfterResolverMiddleware
     beforeFindMany?: AfterResolverMiddleware
     beforeFindUnique?: AfterResolverMiddleware
+    access?: ${modelName}AccessRule[]
 }
 
 export type ${modelName}ModelUpdateConfiguration = {
@@ -156,14 +156,23 @@ export type ${modelName}ModelUpdateConfiguration = {
     beforeUpdateOne?: AfterResolverMiddleware
     beforeUpdateMany?: AfterResolverMiddleware
     beforeUpsertOne?: AfterResolverMiddleware
+    access?: ${modelName}AccessRule[]
+}
+
+export type ${modelName}ModelDeleteConfiguration = {
+  disableAll?: boolean
+  disableDeleteOne?: boolean
+  disableDeleteMany?: boolean
+  beforeDeleteOne?: AfterResolverMiddleware
+  beforeDeleteMany?: AfterResolverMiddleware
+  access?: ${modelName}AccessRule[]
 }
 
 export type ${modelName}ModelConfiguration = {
     create?: ${modelName}ModelCreateConfiguration,
     read?: ${modelName}ModelReadConfiguration,
     update?: ${modelName}ModelUpdateConfiguration,
-    delete?: ModelDeleteConfiguration,
-    access?: AccessRule[]
+    delete?: ${modelName}ModelDeleteConfiguration
 }`
   }
 
@@ -171,20 +180,15 @@ export type ${modelName}ModelConfiguration = {
 }
 
 export const genApiConfigTypes = async (datamodel: DMMF.Datamodel) => {
-  const accessRuleTypesPath = join(__dirname, '../../src/_types/accessRule.ts')
-  const accessRuleTypes = fs.readFileSync(accessRuleTypesPath, 'utf8')
-
-  const modelDeleteConfigurationTypesPath = join(__dirname, '../../src/_types/modelDeleteConfiguration.ts')
-  const modelDeleteConfigurationTypes = fs.readFileSync(modelDeleteConfigurationTypesPath, 'utf8')
+  const afterResolverMiddlewareTypePath = join(__dirname, '../../src/_types/afterResolverMiddleware.ts')
+  const afterResolverMiddlewareType = fs.readFileSync(afterResolverMiddlewareTypePath, 'utf8')
 
   let contents = ''
-  contents += accessRuleTypes
-  contents += modelDeleteConfigurationTypes
+  contents += afterResolverMiddlewareType
   contents += '\n' + genFieldTypes(datamodel.models)
   contents += '\n' + genModelConfigTypes(datamodel.models)
   contents += '\n\n' + genApiConfigType(datamodel.models)
   contents += '\n'
 
-  const pluginSettingsTypePath = join(__dirname, '../_types/apiConfig.d.ts')
-  await writeFileSafely(pluginSettingsTypePath, contents)
+  return contents
 }

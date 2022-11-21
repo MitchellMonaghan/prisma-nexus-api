@@ -3,7 +3,7 @@ import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs } from '../getNexusArgs'
-import { ModelDeleteConfiguration } from '../../_types/modelDeleteConfiguration'
+import { ModelDeleteConfiguration } from '../../_types/genericApiConfig'
 
 export const deleteMany = (
   modelName: string,
