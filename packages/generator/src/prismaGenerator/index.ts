@@ -4,6 +4,7 @@ import { generatorHandler, GeneratorOptions } from '@prisma/generator-helper'
 import { logger } from '@prisma/internals'
 
 import { genApiConfigTypes } from './genApiConfigTypes'
+import { genApiConfigAccessRules } from './genApiConfigAccessRules'
 
 const { version, name } = require('../../package.json')
 const defaultOutputPath = path.join(__dirname, '../generated')
@@ -19,5 +20,6 @@ generatorHandler({
   },
   onGenerate: async (options: GeneratorOptions) => {
     await genApiConfigTypes(options.dmmf.datamodel)
+    await genApiConfigAccessRules(options.dmmf.datamodel)
   }
 })

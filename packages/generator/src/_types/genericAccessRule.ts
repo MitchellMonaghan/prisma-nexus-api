@@ -15,7 +15,7 @@
 //   value: '1342124314'
 // }
 
-export type StringOperatorOptions = 'eq' | 'neq' | 'in' | 'nin' | 'contains' | 'regex' | 'nregex'
+export type StringOperatorOptions = 'eq' | 'neq' | 'in' | 'nin' | 'contains' | 'ncontains' | 'regex' | 'nregex'
 export type NumberOperatorOptions = 'eq' | 'neq' | 'gt' |'lt' |'gte' |'lte' | 'in' | 'nin'
 export type BooleanOperatorOptions = 'eq' | 'neq' | 'in' | 'nin'
 export type DateOperatorOptions = 'eq' | 'neq' | 'gt' |'lt' |'gte' |'lte' | 'in' | 'nin'
@@ -58,21 +58,21 @@ type NotInOperator<T> = {
     value: T[] | string
 }
 type ContainsOperator<T> = {
-    operator: 'contains'
+    name: 'contains'
     value: T
 }
 type NotContainsOperator<T> = {
-    operator: 'ncontains'
+    name: 'ncontains'
     value: T
 }
 
 // Regex
 type RegexOperator = {
-    operator: 'regex'
+    name: 'regex'
     value: string
 }
 type NotRegexOperator = {
-    operator: 'nregex'
+    name: 'nregex'
     value: string
 }
 
@@ -101,25 +101,3 @@ export type BooleanAccessRule = AccessRule & {
 export type DateAccessRule = AccessRule & {
     operator: DateOperators
 }
-
-// type UserStringFields = 'email'|'name'
-// type UserNumberFields = 'id'
-
-// export type UserStringAccessRule = StringAccessRule & {
-//     property: UserStringFields
-// }
-
-// export type UserNumberAccessRule = NumberAccessRule & {
-//     property: UserNumberFields
-//     operator: NumberOperators
-// }
-
-// export type UserAccessRule = UserStringAccessRule | UserNumberAccessRule
-
-// export const userAccessRule: UserAccessRule = {
-//   property: 'id',
-//   operator: {
-//     name: 'in',
-//     value: [5]
-//   }
-// }
