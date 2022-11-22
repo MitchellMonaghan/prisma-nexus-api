@@ -3,7 +3,7 @@ import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs, getConfiguredFieldResolvers } from '../getNexusArgs'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, ModelUniqFields } from '../../_types/apiConfig'
 
 export const updateMany = (
   modelName: string,
@@ -24,6 +24,7 @@ export const updateMany = (
     type: nonNull('BatchPayload'),
     args,
     resolve: async (parent, args, ctx, info) => {
+      const { where } = args
       const { prisma } = ctx
 
       if (updateConfig) {
@@ -45,7 +46,15 @@ export const updateMany = (
         if (!canUpdate) { throw new Error('Unauthorized') }
       }
 
-      const itemsToBeUpdated = await prisma[modelName].findMany(args)
+      const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
+        accumulator[currentValue] = true
+        return accumulator
+      }, {} as Record<string, boolean>)
+
+      const itemsToBeUpdated = await prisma[modelName].findMany({
+        where,
+        select: uniqFieldSelect
+      })
       const result = await prisma[modelName].updateMany(args)
 
       apiConfig.pubsub?.publish(`${modelName}_UPDATED`, itemsToBeUpdated)

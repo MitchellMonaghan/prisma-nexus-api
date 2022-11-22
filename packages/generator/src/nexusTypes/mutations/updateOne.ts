@@ -3,7 +3,7 @@ import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs, getConfiguredFieldResolvers } from '../getNexusArgs'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, ModelUniqFields } from '../../_types/apiConfig'
 
 export const updateOne = (
   modelName: string,
@@ -46,9 +46,17 @@ export const updateOne = (
         if (!canUpdate) { throw new Error('Unauthorized') }
       }
 
+      const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
+        accumulator[currentValue] = true
+        return accumulator
+      }, {} as Record<string, boolean>)
+
       const result = await prisma[modelName].update({
         ...args,
-        ...select
+        select: {
+          ...select.select,
+          ...uniqFieldSelect
+        }
       })
 
       apiConfig.pubsub?.publish(`${modelName}_UPDATED`, result)

@@ -3,7 +3,7 @@ import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs, getConfiguredFieldResolvers } from '../getNexusArgs'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, ModelUniqFields } from '../../_types/apiConfig'
 
 export const upsertOne = (
   modelName: string,
@@ -69,6 +69,11 @@ export const upsertOne = (
         if (!canUpdate) { throw new Error('Unauthorized') }
       }
 
+      const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
+        accumulator[currentValue] = true
+        return accumulator
+      }, {} as Record<string, boolean>)
+
       const count = await prisma[modelName].count({
         ...args
       })
@@ -76,7 +81,10 @@ export const upsertOne = (
 
       const result = await prisma[modelName].upsert({
         ...args,
-        ...select
+        select: {
+          ...select.select,
+          ...uniqFieldSelect
+        }
       })
 
       if (itemExists) {

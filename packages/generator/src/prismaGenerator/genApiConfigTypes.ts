@@ -3,6 +3,8 @@ import { join } from 'path'
 import { DMMF } from '@prisma/generator-helper'
 import { capitalize } from 'lodash'
 
+import { writeFileSafely } from '../utils/writeFileSafely'
+
 const getTypeScriptTypeFromPrismaType = (prismaType:string) => {
   if (prismaType === 'Int' || prismaType === 'Float') {
     return 'number'
@@ -190,6 +192,23 @@ export type ${modelName}ModelConfiguration = {
 }
 
 export const genApiConfigTypes = async (datamodel: DMMF.Datamodel) => {
+  const modelUniqFields = datamodel.models.map(model => {
+    const uniqFields = model.fields.filter(f => f.isId || f.isUnique).map(f => f.name)
+    return `ModelUniqFields["${model.name}"] = "${uniqFields.join(',')}";`
+  })
+
+  const apiConfigJSPath = join(__dirname, '../_types/apiConfig.js')
+  const apiConfigJSContent =
+`"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ModelUniqFields = void 0;
+var ModelUniqFields;
+(function (ModelUniqFields) {
+    ${modelUniqFields.join('\n    ')}
+})(ModelUniqFields = exports.ModelUniqFields || (exports.ModelUniqFields = {}));
+//# sourceMappingURL=apiConfig.js.map`
+  await writeFileSafely(apiConfigJSPath, apiConfigJSContent)
+
   const afterResolverMiddlewareTypePath = join(__dirname, '../../src/_types/afterResolverMiddleware.ts')
   const afterResolverMiddlewareType = fs.readFileSync(afterResolverMiddlewareTypePath, 'utf8')
 

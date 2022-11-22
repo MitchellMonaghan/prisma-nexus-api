@@ -3,7 +3,7 @@ import { mutationField } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs } from '../getNexusArgs'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, ModelUniqFields } from '../../_types/apiConfig'
 
 export const deleteOne = (
   modelName: string,
@@ -32,9 +32,17 @@ export const deleteOne = (
         if (!canDelete) { throw new Error('Unauthorized') }
       }
 
+      const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
+        accumulator[currentValue] = true
+        return accumulator
+      }, {} as Record<string, boolean>)
+
       const result = await prisma[modelName].delete({
         where,
-        ...select
+        select: {
+          ...select.select,
+          ...uniqFieldSelect
+        }
       })
 
       apiConfig.pubsub?.publish(`${modelName}_DELETED`, result)

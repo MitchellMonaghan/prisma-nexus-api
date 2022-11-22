@@ -3,7 +3,7 @@ import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs } from '../getNexusArgs'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, ModelUniqFields } from '../../_types/apiConfig'
 
 export const deleteMany = (
   modelName: string,
@@ -32,14 +32,14 @@ export const deleteMany = (
         if (!canDelete) { throw new Error('Unauthorized') }
       }
 
-      // TODO: Can we get the primary key in a more generic way?
-      // what if table doesnt have a id column?
-      // I want to guarantee that the pk/uniq identifier is passed to subscription resolver
+      const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
+        accumulator[currentValue] = true
+        return accumulator
+      }, {} as Record<string, boolean>)
+
       const itemsToBeDeleted = await prisma[modelName].findMany({
-        where
-        // select: {
-        //   id: true
-        // }
+        where,
+        select: uniqFieldSelect
       })
       const result = await prisma[modelName].deleteMany({ where })
 

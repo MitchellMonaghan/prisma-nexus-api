@@ -3,7 +3,7 @@ import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs, getConfiguredFieldResolvers } from '../getNexusArgs'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, ModelUniqFields } from '../../_types/apiConfig'
 
 export const createOne = (
   modelName: string,
@@ -46,12 +46,19 @@ export const createOne = (
         if (!canCreate) { throw new Error('Unauthorized') }
       }
 
+      const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
+        accumulator[currentValue] = true
+        return accumulator
+      }, {} as Record<string, boolean>)
+
       const result = await prisma[modelName].create({
         ...args,
-        ...select
+        select: {
+          ...select.select,
+          ...uniqFieldSelect
+        }
       })
 
-      console.log(result)
       apiConfig.pubsub?.publish(`${modelName}_CREATED`, result)
 
       return result
