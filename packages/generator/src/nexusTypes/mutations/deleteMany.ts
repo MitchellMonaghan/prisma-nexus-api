@@ -3,14 +3,16 @@ import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs } from '../getNexusArgs'
-import { ModelDeleteConfiguration } from '../../_types/genericApiConfig'
+import { ApiConfig } from '../../_types/apiConfig'
 
 export const deleteMany = (
   modelName: string,
   mutationOutputTypes: DMMF.OutputType,
-  deleteConfig: ModelDeleteConfiguration,
+  apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const modelConfig = apiConfig.data[modelName] || {}
+  const deleteConfig = modelConfig.delete || {}
   const mutationName = `deleteMany${modelName}`
   const args = getNexusOperationArgs(mutationName, mutationOutputTypes, inputsWithNoFields)
 
@@ -30,7 +32,20 @@ export const deleteMany = (
         if (!canDelete) { throw new Error('Unauthorized') }
       }
 
-      return prisma[modelName].deleteMany({ where } as any)
+      // TODO: Can we get the primary key in a more generic way?
+      // what if table doesnt have a id column?
+      // I want to guarantee that the pk/uniq identifier is passed to subscription resolver
+      const itemsToBeDeleted = await prisma[modelName].findMany({
+        where
+        // select: {
+        //   id: true
+        // }
+      })
+      const result = await prisma[modelName].deleteMany({ where })
+
+      apiConfig.pubsub?.publish(`${modelName}_DELETED`, itemsToBeDeleted)
+
+      return result
     }
   })
 }

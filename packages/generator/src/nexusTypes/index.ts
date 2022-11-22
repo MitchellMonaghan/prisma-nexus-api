@@ -86,6 +86,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
     apiConfig
   })
   const apiDmmf = await getDMMF({ datamodel: apiSchema })
+  const apiDataConfig = apiConfig.data
 
   // Base types
   const nexusSchema: (NexusAcceptedTypeDef|undefined)[] = []
@@ -119,7 +120,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
   if (data.inputObjectTypes.model) { inputObjectTypes.push(...data.inputObjectTypes.model) }
   inputObjectTypes.forEach((input) => {
     const modelName = getMatchingModel(input.name, modelNames)
-    let inputFields = filterInputsWithApiConfig(modelName, input, settings.apiConfig)
+    let inputFields = filterInputsWithApiConfig(modelName, input, apiConfig)
     inputFields = inputFields.filter(f => !inputsWithNoFields.includes(f.inputTypes[0].type.toString()))
 
     if (inputFields.length === 0) {
@@ -171,7 +172,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
       if (allTypes.includes(type.name)) { return }
 
       const modelName = getMatchingModel(type.name, modelNames)
-      const modelConfig = settings.apiConfig[modelName] || {}
+      const modelConfig = apiDataConfig[modelName] || {}
       const removedFields = modelConfig?.read?.removedFields || []
 
       const outputFields = type.fields.filter(f => !(removedFields.includes(f.name) || outputsWithNoFields.includes(f.outputType.type.toString())))
@@ -214,7 +215,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
   models.forEach((model) => {
     if (allTypes.includes(model.name)) { return }
 
-    const modelConfig = settings.apiConfig[model.name]
+    const modelConfig = apiDataConfig[model.name]
     const filteredFields = model.fields.filter((field) => {
       const excludeFields = modelConfig?.read?.removedFields || []
       return !excludeFields.includes(field.name)
@@ -281,18 +282,18 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
       const createConfig = modelConfig?.create || {}
       if (!createConfig.disableAll) {
         if (!createConfig.disableCreateOne) {
-          nexusSchema.push(createOne(model.name, mutationOutputTypes, createConfig, inputsWithNoFields))
+          nexusSchema.push(createOne(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
         }
       }
 
       const updateConfig = modelConfig?.update || {}
       if (!updateConfig.disableAll) {
         if (!updateConfig.disableUpdateOne) {
-          nexusSchema.push(updateOne(model.name, mutationOutputTypes, updateConfig, inputsWithNoFields))
+          nexusSchema.push(updateOne(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
         }
 
         if (!updateConfig.disableUpdateMany) {
-          nexusSchema.push(updateMany(model.name, mutationOutputTypes, updateConfig, inputsWithNoFields))
+          nexusSchema.push(updateMany(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
         }
       }
 
@@ -301,16 +302,16 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
         updateConfig.disableAll ||
         updateConfig.disableUpsertOne)
       ) {
-        nexusSchema.push(upsertOne(model.name, mutationOutputTypes, modelConfig, inputsWithNoFields))
+        nexusSchema.push(upsertOne(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
       }
 
       const deleteConfig = modelConfig?.delete || {}
       if (!deleteConfig.disableAll) {
         if (!deleteConfig.disableDeleteOne) {
-          nexusSchema.push(deleteOne(model.name, mutationOutputTypes, deleteConfig, inputsWithNoFields))
+          nexusSchema.push(deleteOne(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
         }
         if (!deleteConfig.disableDeleteMany) {
-          nexusSchema.push(deleteMany(model.name, mutationOutputTypes, deleteConfig, inputsWithNoFields))
+          nexusSchema.push(deleteMany(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
         }
       }
     }
@@ -330,7 +331,7 @@ const filterInputsWithApiConfig = (modelName:string, input: DMMF.InputType, apiC
     return input.fields
   }
 
-  const config = apiConfig[modelName as keyof ApiConfig]
+  const config = apiConfig.data[modelName as keyof ApiConfig]
 
   const isCreateInput = input.name.toLowerCase().includes('create')
   const removedCreateFields = config?.create?.removedFields?.map((rf) => {

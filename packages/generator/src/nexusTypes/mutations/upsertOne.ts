@@ -3,14 +3,18 @@ import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs, getConfiguredFieldResolvers } from '../getNexusArgs'
-import { ModelConfiguration } from '../../_types/genericApiConfig'
+import { ApiConfig } from '../../_types/apiConfig'
 
 export const upsertOne = (
   modelName: string,
   mutationOutputTypes: DMMF.OutputType,
-  modelConfig: ModelConfiguration,
+  apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const modelConfig = apiConfig.data[modelName] || {}
+  const createConfig = modelConfig.create || {}
+  const updateConfig = modelConfig.update || {}
+
   const mutationName = `upsertOne${modelName}`
   const args = getNexusOperationArgs(mutationName, mutationOutputTypes, inputsWithNoFields)
 
@@ -22,12 +26,12 @@ export const upsertOne = (
     type: nonNull(modelName),
     args,
     resolve: async (parent, args, ctx, info) => {
+      if (!args.where) { args.where = {} }
       if (!args.create) { args.create = {} }
       if (!args.update) { args.update = {} }
 
       const { prisma, select } = ctx
 
-      const createConfig = modelConfig?.create || {}
       if (createConfig) {
         const fieldResolvers = await getConfiguredFieldResolvers(
           parent,
@@ -42,7 +46,6 @@ export const upsertOne = (
         }
       }
 
-      const updateConfig = modelConfig?.update || {}
       if (updateConfig) {
         const fieldResolvers = await getConfiguredFieldResolvers(
           parent,
@@ -66,17 +69,23 @@ export const upsertOne = (
         if (!canUpdate) { throw new Error('Unauthorized') }
       }
 
-      if (args.where) {
-        return prisma[modelName].upsert({
-          ...args,
-          ...select
-        })
+      const count = await prisma[modelName].count({
+        ...args
+      })
+      const itemExists = count > 0
+
+      const result = await prisma[modelName].upsert({
+        ...args,
+        ...select
+      })
+
+      if (itemExists) {
+        apiConfig.pubsub?.publish(`${modelName}_UPDATED`, result)
       } else {
-        return prisma[modelName].create({
-          data: args.create,
-          ...select
-        })
+        apiConfig.pubsub?.publish(`${modelName}_CREATED`, result)
       }
+
+      return result
     }
   })
 }

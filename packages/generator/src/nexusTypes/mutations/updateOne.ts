@@ -3,14 +3,16 @@ import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs, getConfiguredFieldResolvers } from '../getNexusArgs'
-import { ModelUpdateConfiguration } from '../../_types/genericApiConfig'
+import { ApiConfig } from '../../_types/apiConfig'
 
 export const updateOne = (
   modelName: string,
   mutationOutputTypes: DMMF.OutputType,
-  updateConfig: ModelUpdateConfiguration,
+  apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const modelConfig = apiConfig.data[modelName] || {}
+  const updateConfig = modelConfig.update || {}
   const mutationName = `updateOne${modelName}`
   const args = getNexusOperationArgs(mutationName, mutationOutputTypes, inputsWithNoFields)
 
@@ -44,10 +46,14 @@ export const updateOne = (
         if (!canUpdate) { throw new Error('Unauthorized') }
       }
 
-      return prisma[modelName].update({
+      const result = await prisma[modelName].update({
         ...args,
         ...select
       })
+
+      apiConfig.pubsub?.publish(`${modelName}_UPDATED`, result)
+
+      return result
     }
   })
 }

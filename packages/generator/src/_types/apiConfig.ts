@@ -1,3 +1,7 @@
 import { ModelConfiguration } from './genericApiConfig'
+import { PubSubEngine } from 'graphql-subscriptions'
 
-export type ApiConfig = Record<string, ModelConfiguration>
+export type ApiConfig = {
+    data: Record<string, ModelConfiguration>
+    pubsub?: PubSubEngine
+}

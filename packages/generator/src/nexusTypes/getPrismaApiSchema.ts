@@ -81,7 +81,7 @@ export const getPrismaApiSchema = async (options: GenerateNexusTypesOptions) => 
 
   for (let i = 0; i < configuredModels.length; i++) {
     const modelName = configuredModels[i]
-    const config = apiConfig[modelName as (keyof ApiConfig)]
+    const config = apiConfig.data[modelName as (keyof ApiConfig)]
 
     const modelDisabled = isModelDisabled(config)
     if (modelDisabled) {

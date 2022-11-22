@@ -3,14 +3,16 @@ import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs, getConfiguredFieldResolvers } from '../getNexusArgs'
-import { ModelCreateConfiguration } from '../../_types/genericApiConfig'
+import { ApiConfig } from '../../_types/apiConfig'
 
 export const createOne = (
   modelName: string,
   mutationOutputTypes: DMMF.OutputType,
-  createConfig: ModelCreateConfiguration,
+  apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const modelConfig = apiConfig.data[modelName] || {}
+  const createConfig = modelConfig.create || {}
   const mutationName = `createOne${modelName}`
   const args = getNexusOperationArgs(mutationName, mutationOutputTypes, inputsWithNoFields)
 
@@ -44,10 +46,15 @@ export const createOne = (
         if (!canCreate) { throw new Error('Unauthorized') }
       }
 
-      return prisma[modelName].create({
+      const result = await prisma[modelName].create({
         ...args,
         ...select
       })
+
+      console.log(result)
+      apiConfig.pubsub?.publish(`${modelName}_CREATED`, result)
+
+      return result
     }
   })
 }

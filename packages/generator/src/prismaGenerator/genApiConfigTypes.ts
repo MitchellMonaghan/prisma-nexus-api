@@ -17,15 +17,17 @@ const getTypeScriptTypeFromPrismaType = (prismaType:string) => {
 
 const genApiConfigType = (models: DMMF.Model[]) => {
   const modelNames = models.map(m => m.name)
+  const modelTypes = modelNames.map(m => `${m}?: ${m}ModelConfiguration`)
 
-  let content = 'export type ApiConfig = {'
+  const content =
+`import { PubSubEngine } from 'graphql-subscriptions'
 
-  for (let i = 0; i < modelNames.length; i++) {
-    const modelName = modelNames[i]
-    content += `\n    ${modelName}?: ${modelName}ModelConfiguration`
+export type ApiConfig = {
+  pubsub?: PubSubEngine
+  data: {
+    ${modelTypes.join('\n    ')}
   }
-
-  content += '\n}'
+}`
 
   return content
 }

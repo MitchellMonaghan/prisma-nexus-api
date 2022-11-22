@@ -3,14 +3,16 @@ import { mutationField } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs } from '../getNexusArgs'
-import { ModelDeleteConfiguration } from '../../_types/genericApiConfig'
+import { ApiConfig } from '../../_types/apiConfig'
 
 export const deleteOne = (
   modelName: string,
   mutationOutputTypes: DMMF.OutputType,
-  deleteConfig: ModelDeleteConfiguration,
+  apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const modelConfig = apiConfig.data[modelName] || {}
+  const deleteConfig = modelConfig.delete || {}
   const mutationName = `deleteOne${modelName}`
   const args = getNexusOperationArgs(mutationName, mutationOutputTypes, inputsWithNoFields)
 
@@ -30,10 +32,14 @@ export const deleteOne = (
         if (!canDelete) { throw new Error('Unauthorized') }
       }
 
-      return prisma[modelName].delete({
+      const result = await prisma[modelName].delete({
         where,
         ...select
       })
+
+      apiConfig.pubsub?.publish(`${modelName}_DELETED`, result)
+
+      return result
     }
   })
 }
