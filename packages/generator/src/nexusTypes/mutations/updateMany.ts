@@ -42,7 +42,7 @@ export const updateMany = (
       }
 
       if (updateConfig.beforeUpdateMany) {
-        const canUpdate = updateConfig.beforeUpdateMany(parent, args, ctx, info)
+        const canUpdate = await updateConfig.beforeUpdateMany(parent, args, ctx, info)
         if (!canUpdate) { throw new Error('Unauthorized') }
       }
 
@@ -56,6 +56,10 @@ export const updateMany = (
         select: uniqFieldSelect
       })
       const result = await prisma[modelName].updateMany(args)
+
+      if (updateConfig.afterUpdateMany) {
+        await updateConfig.afterUpdateMany(result, args, ctx, info)
+      }
 
       apiConfig.pubsub?.publish(`${modelName}_UPDATED`, itemsToBeUpdated)
 

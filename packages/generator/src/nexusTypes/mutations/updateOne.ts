@@ -42,7 +42,7 @@ export const updateOne = (
       }
 
       if (updateConfig.beforeUpdateOne) {
-        const canUpdate = updateConfig.beforeUpdateOne(parent, args, ctx, info)
+        const canUpdate = await updateConfig.beforeUpdateOne(parent, args, ctx, info)
         if (!canUpdate) { throw new Error('Unauthorized') }
       }
 
@@ -58,6 +58,10 @@ export const updateOne = (
           ...uniqFieldSelect
         }
       })
+
+      if (updateConfig.afterUpdateOne) {
+        await updateConfig.afterUpdateOne(result, args, ctx, info)
+      }
 
       apiConfig.pubsub?.publish(`${modelName}_UPDATED`, result)
 

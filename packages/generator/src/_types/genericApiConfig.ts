@@ -1,4 +1,4 @@
-import { AfterResolverMiddleware } from './afterResolverMiddleware'
+import { BeforeOperationMiddleware, AfterOperationMiddleware } from './operationMiddleware'
 import {
   AndOperator,
   OrOperator,
@@ -17,8 +17,10 @@ export type ModelCreateConfiguration = {
     disableCreateOne?: boolean
     disableUpsertOne?: boolean
     removedFields?: (string | FieldResolver)[]
-    beforeCreateOne?: AfterResolverMiddleware
-    beforeUpsertOne?: AfterResolverMiddleware
+    beforeCreateOne?: BeforeOperationMiddleware
+    beforeUpsertOne?: BeforeOperationMiddleware
+    afterCreateOne?: AfterOperationMiddleware
+    afterUpsertOne?: AfterOperationMiddleware
     access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
 }
 
@@ -30,11 +32,16 @@ export type ModelReadConfiguration = {
     disableFindMany?: boolean
     disableFindUnique?: boolean
     removedFields?: string[]
-    beforeAggregate?: AfterResolverMiddleware
-    beforeFindCount?: AfterResolverMiddleware
-    beforeFindFirst?: AfterResolverMiddleware
-    beforeFindMany?: AfterResolverMiddleware
-    beforeFindUnique?: AfterResolverMiddleware
+    beforeAggregate?: BeforeOperationMiddleware
+    beforeFindCount?: BeforeOperationMiddleware
+    beforeFindFirst?: BeforeOperationMiddleware
+    beforeFindMany?: BeforeOperationMiddleware
+    beforeFindUnique?: BeforeOperationMiddleware
+    afterAggregate?: AfterOperationMiddleware
+    afterFindCount?: AfterOperationMiddleware
+    afterFindFirst?: AfterOperationMiddleware
+    afterFindMany?: AfterOperationMiddleware
+    afterFindUnique?: AfterOperationMiddleware
     access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
 }
 
@@ -44,9 +51,12 @@ export type ModelUpdateConfiguration = {
     disableUpdateMany?: boolean
     disableUpsertOne?: boolean
     removedFields?: (string | FieldResolver)[]
-    beforeUpdateOne?: AfterResolverMiddleware
-    beforeUpdateMany?: AfterResolverMiddleware
-    beforeUpsertOne?: AfterResolverMiddleware
+    beforeUpdateOne?: BeforeOperationMiddleware
+    beforeUpdateMany?: BeforeOperationMiddleware
+    beforeUpsertOne?: BeforeOperationMiddleware
+    afterUpdateOne?: AfterOperationMiddleware
+    afterUpdateMany?: AfterOperationMiddleware
+    afterUpsertOne?: AfterOperationMiddleware
     access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
 }
 
@@ -54,8 +64,10 @@ export type ModelDeleteConfiguration = {
     disableAll?: boolean
     disableDeleteOne?: boolean
     disableDeleteMany?: boolean
-    beforeDeleteOne?: AfterResolverMiddleware
-    beforeDeleteMany?: AfterResolverMiddleware
+    beforeDeleteOne?: BeforeOperationMiddleware
+    beforeDeleteMany?: BeforeOperationMiddleware
+    afterDeleteOne?: AfterOperationMiddleware
+    afterDeleteMany?: AfterOperationMiddleware
     access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
 }
 

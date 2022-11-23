@@ -42,7 +42,7 @@ export const createOne = (
       }
 
       if (createConfig.beforeCreateOne) {
-        const canCreate = createConfig.beforeCreateOne(parent, args, ctx, info)
+        const canCreate = await createConfig.beforeCreateOne(parent, args, ctx, info)
         if (!canCreate) { throw new Error('Unauthorized') }
       }
 
@@ -58,6 +58,10 @@ export const createOne = (
           ...uniqFieldSelect
         }
       })
+
+      if (createConfig.afterCreateOne) {
+        await createConfig.afterCreateOne(result, args, ctx, info)
+      }
 
       apiConfig.pubsub?.publish(`${modelName}_CREATED`, result)
 

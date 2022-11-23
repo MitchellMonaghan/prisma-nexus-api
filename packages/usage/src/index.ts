@@ -58,6 +58,7 @@ const start = async () => {
     schema
   })
 
+  // TODO: Convert to express, setup websocket/subscriptions
   const { url } = await startStandaloneServer(server, {
     listen: { port: 4000 },
     context: async ({ req }) => {

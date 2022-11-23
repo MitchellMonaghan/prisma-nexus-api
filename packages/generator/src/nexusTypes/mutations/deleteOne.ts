@@ -28,7 +28,7 @@ export const deleteOne = (
       const { prisma, select } = ctx
 
       if (deleteConfig.beforeDeleteOne) {
-        const canDelete = deleteConfig.beforeDeleteOne(parent, args, ctx, info)
+        const canDelete = await deleteConfig.beforeDeleteOne(parent, args, ctx, info)
         if (!canDelete) { throw new Error('Unauthorized') }
       }
 
@@ -44,6 +44,10 @@ export const deleteOne = (
           ...uniqFieldSelect
         }
       })
+
+      if (deleteConfig.afterDeleteOne) {
+        await deleteConfig.afterDeleteOne(result, args, ctx, info)
+      }
 
       apiConfig.pubsub?.publish(`${modelName}_DELETED`, result)
 

@@ -28,7 +28,7 @@ export const deleteMany = (
       const { prisma } = ctx
 
       if (deleteConfig.beforeDeleteMany) {
-        const canDelete = deleteConfig.beforeDeleteMany(parent, args, ctx, info)
+        const canDelete = await deleteConfig.beforeDeleteMany(parent, args, ctx, info)
         if (!canDelete) { throw new Error('Unauthorized') }
       }
 
@@ -42,6 +42,10 @@ export const deleteMany = (
         select: uniqFieldSelect
       })
       const result = await prisma[modelName].deleteMany({ where })
+
+      if (deleteConfig.afterDeleteMany) {
+        await deleteConfig.afterDeleteMany(result, args, ctx, info)
+      }
 
       apiConfig.pubsub?.publish(`${modelName}_DELETED`, itemsToBeDeleted)
 

@@ -61,11 +61,11 @@ export const upsertOne = (
       }
 
       if (createConfig.beforeUpsertOne) {
-        const canCreate = createConfig.beforeUpsertOne(parent, args, ctx, info)
+        const canCreate = await createConfig.beforeUpsertOne(parent, args, ctx, info)
         if (!canCreate) { throw new Error('Unauthorized') }
       }
       if (updateConfig.beforeUpsertOne) {
-        const canUpdate = updateConfig.beforeUpsertOne(parent, args, ctx, info)
+        const canUpdate = await updateConfig.beforeUpsertOne(parent, args, ctx, info)
         if (!canUpdate) { throw new Error('Unauthorized') }
       }
 
@@ -88,8 +88,14 @@ export const upsertOne = (
       })
 
       if (itemExists) {
+        if (updateConfig.afterUpdateOne) {
+          await updateConfig.afterUpdateOne(result, args, ctx, info)
+        }
         apiConfig.pubsub?.publish(`${modelName}_UPDATED`, result)
       } else {
+        if (createConfig.afterCreateOne) {
+          await createConfig.afterCreateOne(result, args, ctx, info)
+        }
         apiConfig.pubsub?.publish(`${modelName}_CREATED`, result)
       }
 

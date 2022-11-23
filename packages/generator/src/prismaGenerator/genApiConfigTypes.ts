@@ -138,8 +138,10 @@ export type ${modelName}ModelCreateConfiguration = {
     disableCreate?: boolean
     disableUpsert?: boolean
     removedFields?: ${modelName}CreateFields[]
-    beforeCreateOne?: AfterResolverMiddleware
-    beforeUpsertOne?: AfterResolverMiddleware
+    beforeCreateOne?: BeforeOperationMiddleware
+    beforeUpsertOne?: BeforeOperationMiddleware
+    afterCreateOne?: AfterOperationMiddleware
+    afterUpsertOne?: AfterOperationMiddleware
     access?: ${fullAccessRuleType}
 }
 
@@ -151,11 +153,16 @@ export type ${modelName}ModelReadConfiguration = {
     disableFindMany?: boolean
     disableFindUnique?: boolean
     removedFields?: ${modelName}Fields[]
-    beforeAggregate?: AfterResolverMiddleware
-    beforeFindCount?: AfterResolverMiddleware
-    beforeFindFirst?: AfterResolverMiddleware
-    beforeFindMany?: AfterResolverMiddleware
-    beforeFindUnique?: AfterResolverMiddleware
+    beforeAggregate?: BeforeOperationMiddleware
+    beforeFindCount?: BeforeOperationMiddleware
+    beforeFindFirst?: BeforeOperationMiddleware
+    beforeFindMany?: BeforeOperationMiddleware
+    beforeFindUnique?: BeforeOperationMiddleware
+    afterAggregate?: AfterOperationMiddleware
+    afterFindCount?: AfterOperationMiddleware
+    afterFindFirst?: AfterOperationMiddleware
+    afterFindMany?: AfterOperationMiddleware
+    afterFindUnique?: AfterOperationMiddleware
     access?: ${fullAccessRuleType}
 }
 
@@ -165,9 +172,12 @@ export type ${modelName}ModelUpdateConfiguration = {
     disableUpdateMany?: boolean
     disableUpsert?: boolean
     removedFields?: ${modelName}UpdateFields[]
-    beforeUpdateOne?: AfterResolverMiddleware
-    beforeUpdateMany?: AfterResolverMiddleware
-    beforeUpsertOne?: AfterResolverMiddleware
+    beforeUpdateOne?: BeforeOperationMiddleware
+    beforeUpdateMany?: BeforeOperationMiddleware
+    beforeUpsertOne?: BeforeOperationMiddleware
+    afterUpdateOne?: AfterOperationMiddleware
+    afterUpdateMany?: AfterOperationMiddleware
+    afterUpsertOne?: AfterOperationMiddleware
     access?: ${fullAccessRuleType}
 }
 
@@ -175,8 +185,10 @@ export type ${modelName}ModelDeleteConfiguration = {
   disableAll?: boolean
   disableDeleteOne?: boolean
   disableDeleteMany?: boolean
-  beforeDeleteOne?: AfterResolverMiddleware
-  beforeDeleteMany?: AfterResolverMiddleware
+  beforeDeleteOne?: BeforeOperationMiddleware
+  beforeDeleteMany?: BeforeOperationMiddleware
+  afterDeleteOne?: AfterOperationMiddleware
+  afterDeleteMany?: AfterOperationMiddleware
   access?: ${fullAccessRuleType}
 }
 
@@ -209,11 +221,11 @@ var ModelUniqFields;
 //# sourceMappingURL=apiConfig.js.map`
   await writeFileSafely(apiConfigJSPath, apiConfigJSContent)
 
-  const afterResolverMiddlewareTypePath = join(__dirname, '../../src/_types/afterResolverMiddleware.ts')
-  const afterResolverMiddlewareType = fs.readFileSync(afterResolverMiddlewareTypePath, 'utf8')
+  const operationMiddlewareTypePath = join(__dirname, '../../src/_types/operationMiddleware.ts')
+  const operationMiddlewareType = fs.readFileSync(operationMiddlewareTypePath, 'utf8')
 
   let contents = ''
-  contents += afterResolverMiddlewareType
+  contents += operationMiddlewareType
   contents += '\n' + genFieldTypes(datamodel.models)
   contents += '\n' + genModelConfigTypes(datamodel.models)
   contents += '\n\n' + genApiConfigType(datamodel.models)
