@@ -1,11 +1,11 @@
 import { BeforeOperationMiddleware, AfterOperationMiddleware } from './operationMiddleware'
-import {
-  AndOperator,
-  OrOperator,
-  NotOperator,
-  ExistsOperator,
-  PropertySelector
-} from './genericPropertySelector'
+// import {
+//   AndOperator,
+//   OrOperator,
+//   NotOperator,
+//   ExistsOperator,
+//   PropertySelector
+// } from './genericPropertySelector'
 
 export type FieldResolver = {
     fieldName: string,
@@ -21,7 +21,7 @@ export type ModelCreateConfiguration = {
     beforeUpsertOne?: BeforeOperationMiddleware
     afterCreateOne?: AfterOperationMiddleware
     afterUpsertOne?: AfterOperationMiddleware
-    access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
+    // access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
 }
 
 export type ModelReadConfiguration = {
@@ -42,7 +42,7 @@ export type ModelReadConfiguration = {
     afterFindFirst?: AfterOperationMiddleware
     afterFindMany?: AfterOperationMiddleware
     afterFindUnique?: AfterOperationMiddleware
-    access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
+    // access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
 }
 
 export type ModelUpdateConfiguration = {
@@ -57,7 +57,7 @@ export type ModelUpdateConfiguration = {
     afterUpdateOne?: AfterOperationMiddleware
     afterUpdateMany?: AfterOperationMiddleware
     afterUpsertOne?: AfterOperationMiddleware
-    access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
+    // access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
 }
 
 export type ModelDeleteConfiguration = {
@@ -68,7 +68,7 @@ export type ModelDeleteConfiguration = {
     beforeDeleteMany?: BeforeOperationMiddleware
     afterDeleteOne?: AfterOperationMiddleware
     afterDeleteMany?: AfterOperationMiddleware
-    access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
+    // access?: (AndOperator|OrOperator|NotOperator|ExistsOperator|PropertySelector)[]
 }
 
 export type ModelConfiguration = {

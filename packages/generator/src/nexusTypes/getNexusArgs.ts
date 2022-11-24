@@ -2,6 +2,13 @@ import { DMMF } from '@prisma/generator-helper'
 import { nonNull, list } from 'nexus'
 
 import { FieldResolver } from '../_types/genericApiConfig'
+import {
+  AndOperator,
+  OrOperator,
+  NotOperator,
+  ExistsOperator,
+  PropertySelector
+} from '../_types/genericPropertySelector'
 
 const getType = (arg: DMMF.SchemaArg) => {
   let type = `${arg.inputTypes[0].type}` as any
@@ -55,4 +62,36 @@ export const getConfiguredFieldResolvers = async (
   }
 
   return data
+}
+
+export const runAccessConfiguration = async (access?: (AndOperator | OrOperator | NotOperator | ExistsOperator | PropertySelector)[] | undefined) => {
+  if (!access) { return true }
+
+  let canAccess = true
+  for (let i = 0; i < access.length; i++) {
+    const accessObject = access[i]
+    canAccess = !!accessObject && canAccess
+  }
+
+  return canAccess
+}
+
+const resolveAndOperator = () => {
+  return true
+}
+
+const resolveOrOperator = () => {
+  return true
+}
+
+const resolveNotOperator = () => {
+  return true
+}
+
+const resolvePropertySelector = () => {
+  return true
+}
+
+const resolveExistsOperator = () => {
+  return true
 }

@@ -142,7 +142,7 @@ export type ${modelName}ModelCreateConfiguration = {
     beforeUpsertOne?: BeforeOperationMiddleware
     afterCreateOne?: AfterOperationMiddleware
     afterUpsertOne?: AfterOperationMiddleware
-    access?: ${fullAccessRuleType}
+    // access?: ${fullAccessRuleType}
 }
 
 export type ${modelName}ModelReadConfiguration = {
@@ -163,7 +163,7 @@ export type ${modelName}ModelReadConfiguration = {
     afterFindFirst?: AfterOperationMiddleware
     afterFindMany?: AfterOperationMiddleware
     afterFindUnique?: AfterOperationMiddleware
-    access?: ${fullAccessRuleType}
+    // access?: ${fullAccessRuleType}
 }
 
 export type ${modelName}ModelUpdateConfiguration = {
@@ -178,7 +178,7 @@ export type ${modelName}ModelUpdateConfiguration = {
     afterUpdateOne?: AfterOperationMiddleware
     afterUpdateMany?: AfterOperationMiddleware
     afterUpsertOne?: AfterOperationMiddleware
-    access?: ${fullAccessRuleType}
+    // access?: ${fullAccessRuleType}
 }
 
 export type ${modelName}ModelDeleteConfiguration = {
@@ -189,7 +189,7 @@ export type ${modelName}ModelDeleteConfiguration = {
   beforeDeleteMany?: BeforeOperationMiddleware
   afterDeleteOne?: AfterOperationMiddleware
   afterDeleteMany?: AfterOperationMiddleware
-  access?: ${fullAccessRuleType}
+  // access?: ${fullAccessRuleType}
 }
 
 export type ${modelName}ModelConfiguration = {
