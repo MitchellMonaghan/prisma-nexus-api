@@ -116,6 +116,7 @@ import {
   ${models.map(m => `Get${m.name}AggregateType`).join(',\n  ')},
   ${models.concat(enums as any).map(m => `${m.name}`).join(',\n  ')}
 } from '@prisma/client'
+import { ModelConfiguration } from './genericApiConfig'
 
 export type Models = ${models.map(m => `'${m.name}'`).join('|')}
 `

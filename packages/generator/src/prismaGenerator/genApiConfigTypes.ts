@@ -15,6 +15,7 @@ export type ApiConfig = {
   prisma: PrismaClient
   pubsub?: PubSubEngine
   data: {
+    all: ModelConfiguration
     ${modelTypes.join('\n    ')}
   }
 }`

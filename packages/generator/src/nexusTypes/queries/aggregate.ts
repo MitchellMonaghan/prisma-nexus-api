@@ -1,6 +1,6 @@
 import { DMMF } from '@prisma/generator-helper'
 import { queryField } from 'nexus'
-import { getNexusOperationArgs } from '../getNexusArgs'
+import { getNexusOperationArgs } from '../utils'
 
 export const aggregate = (
   modelName: string,

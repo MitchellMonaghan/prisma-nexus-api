@@ -2,7 +2,7 @@ import { DMMF } from '@prisma/generator-helper'
 import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
-import { getNexusOperationArgs, getModelUniqFieldSelect } from '../getNexusArgs'
+import { getNexusOperationArgs, getModelUniqFieldSelect } from '../utils'
 import { ApiConfig } from '../../_types/apiConfig'
 
 export interface UpsertAndNotifyOptions {
@@ -79,7 +79,7 @@ export const upsertOne = (
       }
 
       if (upsertConfig.upsertOneOverride) {
-        return upsertConfig.upsertOneOverride(prismaParams, ctx)
+        return upsertConfig.upsertOneOverride(modelName, prismaParams, ctx)
       }
 
       return upsertAndNotify({

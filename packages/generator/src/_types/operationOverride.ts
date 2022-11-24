@@ -1,1 +1,1 @@
-export type OperationOverride<T> = (prismaParams: any, ctx: any) => Promise<T>
+export type OperationOverride<T> = (modelName:string, prismaParams: any, ctx: any) => Promise<T>

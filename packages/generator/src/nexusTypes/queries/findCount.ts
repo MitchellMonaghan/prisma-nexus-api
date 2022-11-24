@@ -1,6 +1,6 @@
 import { DMMF } from '@prisma/generator-helper'
 import { queryField, nonNull } from 'nexus'
-import { getNexusOperationArgs } from '../getNexusArgs'
+import { getNexusOperationArgs } from '../utils'
 
 export const findCount = (
   modelName: string,

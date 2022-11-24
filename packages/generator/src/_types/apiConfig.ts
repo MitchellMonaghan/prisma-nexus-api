@@ -5,7 +5,10 @@ import { ModelConfiguration } from './genericApiConfig'
 export type ApiConfig = {
     prisma: PrismaClient
     pubsub?: PubSubEngine
-    data: Record<string, ModelConfiguration>
+    data: {
+        all: ModelConfiguration
+        [key:string]: ModelConfiguration
+    }
 }
 
 export enum ModelUniqFields {}

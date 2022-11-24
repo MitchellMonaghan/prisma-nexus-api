@@ -2,7 +2,7 @@ import { DMMF } from '@prisma/generator-helper'
 import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
-import { getNexusOperationArgs, getModelUniqFieldSelect } from '../getNexusArgs'
+import { getNexusOperationArgs, getModelUniqFieldSelect } from '../utils'
 import { ApiConfig } from '../../_types/apiConfig'
 
 export interface CreateAndNotifyOptions {
@@ -63,7 +63,7 @@ export const createOne = (
       }
 
       if (createConfig.createOneOverride) {
-        return createConfig.createOneOverride(prismaParams, ctx)
+        return createConfig.createOneOverride(modelName, prismaParams, ctx)
       }
 
       return createAndNotify({

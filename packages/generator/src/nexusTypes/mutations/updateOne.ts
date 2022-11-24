@@ -2,7 +2,7 @@ import { DMMF } from '@prisma/generator-helper'
 import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
-import { getNexusOperationArgs, getModelUniqFieldSelect } from '../getNexusArgs'
+import { getNexusOperationArgs, getModelUniqFieldSelect } from '../utils'
 import { ApiConfig } from '../../_types/apiConfig'
 
 export interface UpdateAndNotifyOptions {
@@ -63,7 +63,7 @@ export const updateOne = (
       }
 
       if (updateConfig.updateOneOverride) {
-        return updateConfig.updateOneOverride(prismaParams, ctx)
+        return updateConfig.updateOneOverride(modelName, prismaParams, ctx)
       }
 
       return updateAndNotify({

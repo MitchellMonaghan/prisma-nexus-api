@@ -2,7 +2,7 @@ import { DMMF } from '@prisma/generator-helper'
 import { mutationField } from 'nexus'
 import { isEmpty } from 'lodash'
 
-import { getNexusOperationArgs, getModelUniqFieldSelect } from '../getNexusArgs'
+import { getNexusOperationArgs, getModelUniqFieldSelect } from '../utils'
 import { ApiConfig } from '../../_types/apiConfig'
 
 export interface DeleteAndNotifyOptions {
@@ -62,7 +62,7 @@ export const deleteOne = (
       }
 
       if (deleteConfig.deleteOneOverride) {
-        return deleteConfig.deleteOneOverride(prismaParams, ctx)
+        return deleteConfig.deleteOneOverride(modelName, prismaParams, ctx)
       }
 
       return deleteAndNotify({

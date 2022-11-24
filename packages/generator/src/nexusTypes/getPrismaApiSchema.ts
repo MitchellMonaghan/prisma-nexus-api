@@ -1,55 +1,62 @@
 import { intersection } from 'lodash'
 import { createPrismaSchemaBuilder } from '@mrleebo/prisma-ast'
 
-import {
-  ApiConfig,
-  ModelConfiguration
-} from '../_types'
+import { ApiConfig } from '../_types'
+import { getModelRemovedFields } from './utils'
 
-export const isModelDisabled = (modelApiConfiguration?: ModelConfiguration) => {
-  if (!modelApiConfiguration) { return false }
+export const isModelDisabled = (modelName:string, apiConfig: ApiConfig) => {
+  const allConfiguration = apiConfig.data.all || {}
+  const modelApiConfiguration = apiConfig.data[modelName as (keyof ApiConfig)] || {}
 
-  const upsertDisabled = modelApiConfiguration?.upsert?.disableAll
+  // Create
+  const createDisabled = allConfiguration?.create?.disableAll || modelApiConfiguration?.create?.disableAll
 
-  const allCreatesDisabled = modelApiConfiguration?.create?.disableAll && upsertDisabled
+  // Read
+  const disableAggregate = allConfiguration?.read?.disableAggregate || modelApiConfiguration?.read?.disableAggregate
+  const disableFindCount = allConfiguration?.read?.disableFindCount || modelApiConfiguration?.read?.disableFindCount
+  const disableFindFirst = allConfiguration?.read?.disableFindFirst || modelApiConfiguration?.read?.disableFindFirst
+  const disableFindMany = allConfiguration?.read?.disableFindMany || modelApiConfiguration?.read?.disableFindMany
+  const disableFindUnique = allConfiguration?.read?.disableFindUnique || modelApiConfiguration?.read?.disableFindUnique
+  const allReadsDisabled = disableAggregate &&
+    disableFindCount &&
+    disableFindFirst &&
+    disableFindMany &&
+    disableFindUnique
+  const readDisabled = allConfiguration?.read?.disableAll || modelApiConfiguration?.read?.disableAll || allReadsDisabled
 
-  const createDisabled = modelApiConfiguration?.create?.disableAll || allCreatesDisabled
+  // Update
+  const updateOnedisabled = allConfiguration?.update?.disableUpdateOne || modelApiConfiguration?.update?.disableUpdateOne
+  const updateManydisabled = allConfiguration?.update?.disableUpdateMany || modelApiConfiguration?.update?.disableUpdateMany
+  const allUpdatesDisabled = updateOnedisabled && updateManydisabled
+  const updateDisabled = allConfiguration?.update?.disableAll || modelApiConfiguration?.update?.disableAll || allUpdatesDisabled
 
-  const allReadsDisabled = modelApiConfiguration?.read?.disableAggregate &&
-    modelApiConfiguration?.read?.disableFindCount &&
-    modelApiConfiguration?.read?.disableFindFirst &&
-    modelApiConfiguration?.read?.disableFindMany &&
-    modelApiConfiguration?.read?.disableFindUnique
+  // Upsert
+  const upsertDisabled = allConfiguration?.upsert?.disableAll || modelApiConfiguration?.upsert?.disableAll
 
-  const readDisabled = modelApiConfiguration?.read?.disableAll || allReadsDisabled
-
-  const allUpdatesDisabled = modelApiConfiguration?.update?.disableUpdateOne &&
-  modelApiConfiguration?.update?.disableUpdateMany && upsertDisabled
-
-  const updateDisabled = modelApiConfiguration?.update?.disableAll || allUpdatesDisabled
-
-  const allDeletesDisabled = modelApiConfiguration?.delete?.disableDeleteOne &&
-  modelApiConfiguration?.delete.disableDeleteMany
-
-  const deleteDisabled = modelApiConfiguration?.delete?.disableAll || allDeletesDisabled
+  // Delete
+  const deleteOneDisabled = allConfiguration?.delete?.disableDeleteOne || modelApiConfiguration?.delete?.disableDeleteOne
+  const deleteManyDisabled = allConfiguration?.delete?.disableDeleteMany || modelApiConfiguration?.delete?.disableDeleteMany
+  const allDeletesDisabled = deleteOneDisabled && deleteManyDisabled
+  const deleteDisabled = allConfiguration?.delete?.disableAll || modelApiConfiguration?.delete?.disableAll || allDeletesDisabled
 
   const modelDisabled = createDisabled &&
       readDisabled &&
       updateDisabled &&
+      upsertDisabled &&
       deleteDisabled
 
   return modelDisabled
 }
 
-export const getDisabledFields = (modelApiConfiguration?: ModelConfiguration) => {
+export const getDisabledFields = (modelName:string, apiConfig: ApiConfig) => {
   // excludedCreateFields means removed from create inputs
-  const excludedCreateFields = modelApiConfiguration?.create?.removedFields || []
+  const excludedCreateFields = getModelRemovedFields(modelName, 'create', apiConfig)
 
   // excludedReadFields means removed from read inputs/outputs
-  const excludedReadFields = modelApiConfiguration?.read?.removedFields || []
+  const excludedReadFields = getModelRemovedFields(modelName, 'read', apiConfig)
 
   // excludedUpdateFields means removed from update inputs
-  const excludedUpdateFields = modelApiConfiguration?.update?.removedFields || []
+  const excludedUpdateFields = getModelRemovedFields(modelName, 'update', apiConfig)
 
   return intersection<string>(excludedCreateFields, excludedReadFields, excludedUpdateFields)
 }
@@ -62,21 +69,20 @@ export type GenerateNexusTypesOptions = {
 export const getPrismaApiSchema = async (options: GenerateNexusTypesOptions) => {
   const { dbSchema, apiConfig } = options
 
-  const configuredModels = Object.keys(apiConfig)
+  const configuredModels = Object.keys(apiConfig).filter(m => m !== 'all')
 
   const builder = createPrismaSchemaBuilder(dbSchema)
 
   for (let i = 0; i < configuredModels.length; i++) {
     const modelName = configuredModels[i]
-    const config = apiConfig.data[modelName as (keyof ApiConfig)]
 
-    const modelDisabled = isModelDisabled(config)
+    const modelDisabled = isModelDisabled(modelName, apiConfig)
     if (modelDisabled) {
       builder.drop(modelName)
       continue
     }
 
-    const disabledFields = getDisabledFields(config)
+    const disabledFields = getDisabledFields(modelName, apiConfig)
     for (let j = 0; j < disabledFields.length; j++) {
       builder.dropField(modelName, disabledFields[j])
     }

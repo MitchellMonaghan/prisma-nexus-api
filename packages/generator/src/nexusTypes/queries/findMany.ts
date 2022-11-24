@@ -1,6 +1,6 @@
 import { DMMF } from '@prisma/generator-helper'
 import { queryField, nonNull, list } from 'nexus'
-import { getNexusOperationArgs } from '../getNexusArgs'
+import { getNexusOperationArgs } from '../utils'
 
 export const findMany = (
   modelName: string,

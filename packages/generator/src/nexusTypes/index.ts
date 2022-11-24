@@ -9,7 +9,7 @@ import { ApiConfig } from '../_types/apiConfig'
 import { maxBy } from 'lodash'
 
 import { getPrismaApiSchema } from './getPrismaApiSchema'
-
+import { getModelRemovedFields } from './utils'
 import {
   aggregate,
   findCount,
@@ -102,6 +102,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
   })
   const apiDmmf = await getDMMF({ datamodel: apiSchema })
   const apiDataConfig = apiConfig.data
+  const allConfig = apiDataConfig.all || {}
 
   // Base types
   const nexusSchema: (NexusAcceptedTypeDef|undefined)[] = []
@@ -140,7 +141,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
     let inputFields = filterInputsWithApiConfig(modelName, input, apiConfig)
     inputFields = inputFields.filter(f => !inputsWithNoFields.includes(f.inputTypes[0].type.toString()))
 
-    if (inputFields.length === 0 || modelConfig.disableAll) {
+    if (allConfig.disableAll || modelConfig.disableAll || inputFields.length === 0) {
       inputsWithNoFields.push(input.name)
       return
     }
@@ -190,10 +191,10 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
 
       const modelName = getMatchingModel(type.name, modelNames)
       const modelConfig = apiDataConfig[modelName] || {}
-      const removedFields = modelConfig?.read?.removedFields || []
+      const removedFields = getModelRemovedFields(modelName, 'read', apiConfig)
 
       const outputFields = type.fields.filter(f => !(removedFields.includes(f.name) || outputsWithNoFields.includes(f.outputType.type.toString())))
-      if (outputFields.length === 0 || modelConfig.disableAll) {
+      if (allConfig.disableAll || modelConfig.disableAll || outputFields.length === 0) {
         outputsWithNoFields.push(type.name)
         return
       }
@@ -234,11 +235,11 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
 
     const modelConfig = apiDataConfig[model.name] || {}
     const filteredFields = model.fields.filter((field) => {
-      const excludeFields = modelConfig?.read?.removedFields || []
+      const excludeFields = getModelRemovedFields(model.name, 'read', apiConfig)
       return !excludeFields.includes(field.name)
     })
 
-    if (filteredFields.length === 0 || modelConfig.disableAll) {
+    if (allConfig.disableAll || modelConfig.disableAll || filteredFields.length === 0) {
       return
     }
 
@@ -270,25 +271,26 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
 
     // Queries
     if (queryOutputTypes) {
+      const allReadConfig = allConfig?.read || {}
       const readConfig = modelConfig?.read || {}
-      if (!readConfig.disableAll) {
-        if (!readConfig.disableAggregate) {
+      if (!(allReadConfig.disableAll || readConfig.disableAll)) {
+        if (!(allReadConfig.disableAggregate || readConfig.disableAggregate)) {
           nexusSchema.push(aggregate(model.name, queryOutputTypes, inputsWithNoFields))
         }
 
-        if (!readConfig.disableFindCount) {
+        if (!(allReadConfig.disableFindCount || readConfig.disableFindCount)) {
           nexusSchema.push(findCount(model.name, queryOutputTypes, inputsWithNoFields))
         }
 
-        if (!readConfig.disableFindFirst) {
+        if (!(allReadConfig.disableFindFirst || readConfig.disableFindFirst)) {
           nexusSchema.push(findFirst(model.name, queryOutputTypes, inputsWithNoFields))
         }
 
-        if (!readConfig.disableFindMany) {
+        if (!(allReadConfig.disableFindMany || readConfig.disableFindMany)) {
           nexusSchema.push(findMany(model.name, queryOutputTypes, inputsWithNoFields))
         }
 
-        if (!readConfig.disableFindUnique) {
+        if (!(allReadConfig.disableFindUnique || readConfig.disableFindUnique)) {
           nexusSchema.push(findUnique(model.name, queryOutputTypes, inputsWithNoFields))
         }
       }
@@ -296,35 +298,40 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
 
     // Mutations
     if (mutationOutputTypes) {
+      const allCreateConfig = allConfig?.create || {}
       const createConfig = modelConfig?.create || {}
-      if (!createConfig.disableAll) {
-        if (!createConfig.disableAll) {
+      if (!(allCreateConfig.disableAll || createConfig.disableAll)) {
+        if (!(allCreateConfig.disableAll || createConfig.disableAll)) {
           nexusSchema.push(createOne(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
         }
       }
 
+      const allUpdateConfig = allConfig?.update || {}
       const updateConfig = modelConfig?.update || {}
-      if (!updateConfig.disableAll) {
-        if (!updateConfig.disableUpdateOne) {
+      if (!(allUpdateConfig.disableAll || updateConfig.disableAll)) {
+        if (!(allUpdateConfig.disableUpdateOne || updateConfig.disableUpdateOne)) {
           nexusSchema.push(updateOne(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
         }
 
-        if (!updateConfig.disableUpdateMany) {
+        if (!allUpdateConfig.disableUpdateMany || updateConfig.disableUpdateMany) {
           nexusSchema.push(updateMany(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
         }
       }
 
+      const allUpsertConfig = allConfig?.upsert || {}
       const upsertConfig = modelConfig?.upsert || {}
-      if (!upsertConfig.disableAll) {
+      if (!(allUpsertConfig.disableAll || upsertConfig.disableAll)) {
         nexusSchema.push(upsertOne(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
       }
 
+      const allDeleteConfig = modelConfig?.delete || {}
       const deleteConfig = modelConfig?.delete || {}
-      if (!deleteConfig.disableAll) {
-        if (!deleteConfig.disableDeleteOne) {
+      if (!(allDeleteConfig.disableAll || deleteConfig.disableAll)) {
+        if (!(allDeleteConfig.disableDeleteOne || deleteConfig.disableDeleteOne)) {
           nexusSchema.push(deleteOne(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
         }
-        if (!deleteConfig.disableDeleteMany) {
+
+        if (!(allDeleteConfig.disableDeleteMany || deleteConfig.disableDeleteMany)) {
           nexusSchema.push(deleteMany(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
         }
       }
@@ -345,34 +352,17 @@ const filterInputsWithApiConfig = (modelName:string, input: DMMF.InputType, apiC
     return input.fields
   }
 
-  const config = apiConfig.data[modelName as keyof ApiConfig]
-
   const isCreateInput = input.name.toLowerCase().includes('create')
-  const removedCreateFields = config?.create?.removedFields || []
-
   const isUpdateInput = input.name.toLowerCase().includes('update')
-  const removedUpdateFields = config?.update?.removedFields || []
 
-  const isReadInput = !(isCreateInput || isUpdateInput)
-  const removedReadFields = config?.read?.removedFields || []
+  let operation:'create'|'read'|'update' = 'read'
+  operation = isCreateInput ? 'create' : operation
+  operation = isUpdateInput ? 'update' : operation
 
+  const removedFields = getModelRemovedFields(modelName, operation, apiConfig)
   let fields = input.fields
-  if (isCreateInput) {
-    fields = fields.filter(field => {
-      return !(removedCreateFields.includes(field.name))
-    })
-  }
-
-  if (isUpdateInput) {
-    fields = fields.filter(field => {
-      return !(removedUpdateFields.includes(field.name))
-    })
-  }
-
-  if (isReadInput) {
-    fields = fields.filter(field => {
-      return !(removedReadFields.includes(field.name))
-    })
-  }
+  fields = fields.filter(field => {
+    return !(removedFields.includes(field.name))
+  })
   return fields
 }

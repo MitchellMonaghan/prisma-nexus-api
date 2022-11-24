@@ -9,7 +9,7 @@ import {
   PropertySelector
 } from '../_types/genericPropertySelector'
 
-import { ModelUniqFields } from '../_types/apiConfig'
+import { ApiConfig, ModelUniqFields } from '../_types/apiConfig'
 
 const getType = (arg: DMMF.SchemaArg) => {
   let type = `${arg.inputTypes[0].type}` as any
@@ -52,6 +52,20 @@ export const getModelUniqFieldSelect = (modelName: string) => {
   }, {} as Record<string, boolean>)
 
   return uniqFieldSelect
+}
+
+export const getModelRemovedFields = (modelName: string, operation:'create'|'read'|'update', apiConfig:ApiConfig) => {
+  const allConfiguration = apiConfig.data.all || {}
+  const modelConfiguration = apiConfig.data[modelName as (keyof ApiConfig)] || {}
+
+  const allOperationConfiguration = allConfiguration[operation] || {}
+  const modelOperationConfiguration = modelConfiguration[operation] || {}
+
+  const excludedAllFields = allOperationConfiguration?.removedFields || []
+  const excludedModelFields = modelOperationConfiguration?.removedFields || []
+  const excludedFields = excludedAllFields.concat(excludedModelFields)
+
+  return excludedFields
 }
 
 export const runAccessConfiguration = async (access?: (AndOperator | OrOperator | NotOperator | ExistsOperator | PropertySelector)[] | undefined) => {
