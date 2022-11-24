@@ -42,6 +42,8 @@ export const updateOne = (
   apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const allConfig = apiConfig.data.all || {}
+  const allUpdateConfig = allConfig?.update || {}
   const modelConfig = apiConfig.data[modelName] || {}
   const updateConfig = modelConfig.update || {}
   const mutationName = `updateOne${modelName}`
@@ -62,7 +64,9 @@ export const updateOne = (
         ...select
       }
 
-      if (updateConfig.updateOneOverride) {
+      if (allUpdateConfig.updateOneOverride) {
+        return allUpdateConfig.updateOneOverride(modelName, prismaParams, ctx)
+      } else if (updateConfig.updateOneOverride) {
         return updateConfig.updateOneOverride(modelName, prismaParams, ctx)
       }
 

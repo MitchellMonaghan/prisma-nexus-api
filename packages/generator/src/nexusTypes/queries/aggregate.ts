@@ -10,6 +10,10 @@ export const aggregate = (
   apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const allConfig = apiConfig.data.all || {}
+  const allReadConfig = allConfig?.read || {}
+  const modelConfig = apiConfig.data[modelName] || {}
+  const readConfig = modelConfig.read || {}
   const queryName = `aggregate${modelName}`
   const args = getNexusOperationArgs(queryName, queryOutputTypes, inputsWithNoFields)
 
@@ -22,10 +26,10 @@ export const aggregate = (
         ...args,
         ...select
       }
-      const modelConfig = apiConfig.data[modelName] || {}
-      const readConfig = modelConfig.read || {}
 
-      if (readConfig.aggregateOverride) {
+      if (allReadConfig.aggregateOverride) {
+        return allReadConfig.aggregateOverride(modelName, prismaParams, ctx)
+      } else if (readConfig.aggregateOverride) {
         return readConfig.aggregateOverride(modelName, prismaParams, ctx)
       }
 

@@ -40,6 +40,8 @@ export const deleteMany = (
   apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const allConfig = apiConfig.data.all || {}
+  const allDeleteConfig = allConfig?.delete || {}
   const modelConfig = apiConfig.data[modelName] || {}
   const deleteConfig = modelConfig.delete || {}
   const mutationName = `deleteMany${modelName}`
@@ -57,7 +59,9 @@ export const deleteMany = (
         ...args
       }
 
-      if (deleteConfig.deleteManyOverride) {
+      if (allDeleteConfig.deleteManyOverride) {
+        return allDeleteConfig.deleteManyOverride(modelName, prismaParams, ctx)
+      } else if (deleteConfig.deleteManyOverride) {
         return deleteConfig.deleteManyOverride(modelName, prismaParams, ctx)
       }
 

@@ -10,6 +10,10 @@ export const findMany = (
   apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const allConfig = apiConfig.data.all || {}
+  const allReadConfig = allConfig?.read || {}
+  const modelConfig = apiConfig.data[modelName] || {}
+  const readConfig = modelConfig.read || {}
   const queryName = `findMany${modelName}`
   const args = getNexusOperationArgs(queryName, queryOutputTypes, inputsWithNoFields)
 
@@ -22,10 +26,10 @@ export const findMany = (
         ...args,
         ...select
       }
-      const modelConfig = apiConfig.data[modelName] || {}
-      const readConfig = modelConfig.read || {}
 
-      if (readConfig.findManyOverride) {
+      if (allReadConfig.findManyOverride) {
+        return allReadConfig.findManyOverride(modelName, prismaParams, ctx)
+      } else if (readConfig.findManyOverride) {
         return readConfig.findManyOverride(modelName, prismaParams, ctx)
       }
 

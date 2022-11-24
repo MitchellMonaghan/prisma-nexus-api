@@ -42,6 +42,8 @@ export const deleteOne = (
   apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const allConfig = apiConfig.data.all || {}
+  const allDeleteConfig = allConfig?.delete || {}
   const modelConfig = apiConfig.data[modelName] || {}
   const deleteConfig = modelConfig.delete || {}
   const mutationName = `deleteOne${modelName}`
@@ -61,7 +63,9 @@ export const deleteOne = (
         ...select
       }
 
-      if (deleteConfig.deleteOneOverride) {
+      if (allDeleteConfig.deleteOneOverride) {
+        return allDeleteConfig.deleteOneOverride(modelName, prismaParams, ctx)
+      } else if (deleteConfig.deleteOneOverride) {
         return deleteConfig.deleteOneOverride(modelName, prismaParams, ctx)
       }
 

@@ -42,6 +42,8 @@ export const createOne = (
   apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const allConfig = apiConfig.data.all || {}
+  const allCreateConfig = allConfig?.create || {}
   const modelConfig = apiConfig.data[modelName] || {}
   const createConfig = modelConfig.create || {}
   const mutationName = `createOne${modelName}`
@@ -62,7 +64,9 @@ export const createOne = (
         ...select
       }
 
-      if (createConfig.createOneOverride) {
+      if (allCreateConfig.createOneOverride) {
+        return allCreateConfig.createOneOverride(modelName, prismaParams, ctx)
+      } else if (createConfig.createOneOverride) {
         return createConfig.createOneOverride(modelName, prismaParams, ctx)
       }
 

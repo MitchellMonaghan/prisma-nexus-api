@@ -49,6 +49,8 @@ export const updateMany = (
   apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const allConfig = apiConfig.data.all || {}
+  const allUpdateConfig = allConfig?.update || {}
   const modelConfig = apiConfig.data[modelName] || {}
   const updateConfig = modelConfig.update || {}
   const mutationName = `updateMany${modelName}`
@@ -68,7 +70,9 @@ export const updateMany = (
         ...select
       }
 
-      if (updateConfig.updateManyOverride) {
+      if (allUpdateConfig.updateManyOverride) {
+        return allUpdateConfig.updateManyOverride(modelName, prismaParams, ctx)
+      } else if (updateConfig.updateManyOverride) {
         return updateConfig.updateManyOverride(modelName, prismaParams, ctx)
       }
 

@@ -54,6 +54,8 @@ export const upsertOne = (
   apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const allConfig = apiConfig.data.all || {}
+  const allUpsertConfig = allConfig?.upsert || {}
   const modelConfig = apiConfig.data[modelName] || {}
   const upsertConfig = modelConfig.upsert || {}
 
@@ -78,7 +80,9 @@ export const upsertOne = (
         ...select
       }
 
-      if (upsertConfig.upsertOneOverride) {
+      if (allUpsertConfig.upsertOneOverride) {
+        return allUpsertConfig.upsertOneOverride(modelName, prismaParams, ctx)
+      } else if (upsertConfig.upsertOneOverride) {
         return upsertConfig.upsertOneOverride(modelName, prismaParams, ctx)
       }
 

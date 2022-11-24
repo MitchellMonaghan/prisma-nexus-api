@@ -10,6 +10,10 @@ export const findFirst = (
   apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const allConfig = apiConfig.data.all || {}
+  const allReadConfig = allConfig?.read || {}
+  const modelConfig = apiConfig.data[modelName] || {}
+  const readConfig = modelConfig.read || {}
   const queryName = `findFirst${modelName}`
   const args = getNexusOperationArgs(queryName, queryOutputTypes, inputsWithNoFields)
 
@@ -22,10 +26,10 @@ export const findFirst = (
         ...args,
         ...select
       }
-      const modelConfig = apiConfig.data[modelName] || {}
-      const readConfig = modelConfig.read || {}
 
-      if (readConfig.findFirstOverride) {
+      if (allReadConfig.findFirstOverride) {
+        return allReadConfig.findFirstOverride(modelName, prismaParams, ctx)
+      } else if (readConfig.findFirstOverride) {
         return readConfig.findFirstOverride(modelName, prismaParams, ctx)
       }
 

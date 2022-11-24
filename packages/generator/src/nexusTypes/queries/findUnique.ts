@@ -10,6 +10,10 @@ export const findUnique = (
   apiConfig: ApiConfig,
   inputsWithNoFields:string[]
 ) => {
+  const allConfig = apiConfig.data.all || {}
+  const allReadConfig = allConfig?.read || {}
+  const modelConfig = apiConfig.data[modelName] || {}
+  const readConfig = modelConfig.read || {}
   const queryName = `findUnique${modelName}`
   const args = getNexusOperationArgs(queryName, queryOutputTypes, inputsWithNoFields)
 
@@ -22,10 +26,10 @@ export const findUnique = (
         ...args,
         ...select
       }
-      const modelConfig = apiConfig.data[modelName] || {}
-      const readConfig = modelConfig.read || {}
 
-      if (readConfig.findUniqueOverride) {
+      if (allReadConfig.findUniqueOverride) {
+        return allReadConfig.findUniqueOverride(modelName, prismaParams, ctx)
+      } else if (readConfig.findUniqueOverride) {
         return readConfig.findUniqueOverride(modelName, prismaParams, ctx)
       }
 
