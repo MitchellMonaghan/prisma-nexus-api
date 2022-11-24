@@ -1,4 +1,4 @@
-import { OperationOverride } from './operationOverride'
+import { OperationOverride } from './apiConfig'
 // import {
 //   AndOperator,
 //   OrOperator,

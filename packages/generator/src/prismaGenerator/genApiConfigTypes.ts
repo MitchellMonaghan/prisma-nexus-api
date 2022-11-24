@@ -1,4 +1,3 @@
-import fs from 'fs'
 import { join } from 'path'
 import { DMMF } from '@prisma/generator-helper'
 
@@ -151,12 +150,7 @@ var ModelUniqFields;
 //# sourceMappingURL=apiConfig.js.map`
   await writeFileSafely(apiConfigJSPath, apiConfigJSContent)
 
-  const operationOverrideTypePath = join(__dirname, '../../src/_types/operationOverride.ts')
-  const operationOverrideType = fs.readFileSync(operationOverrideTypePath, 'utf8')
-
-  let contents = ''
-  contents += operationOverrideType
-  contents += '\n' + genFieldTypes(datamodel.models)
+  let contents = genFieldTypes(datamodel.models)
   contents += '\n' + genModelConfigTypes(datamodel.models)
   contents += '\n\n' + genApiConfigType(datamodel.models)
   contents += '\n'

@@ -119,6 +119,16 @@ import {
 import { ModelConfiguration } from './genericApiConfig'
 
 export type Models = ${models.map(m => `'${m.name}'`).join('|')}
+
+export type OperationOverrideOptions<ParamsType, ContextType> = {
+  modelName:string
+  prismaOperation:string
+  prismaParams: ParamsType
+  ctx: ContextType
+  // eslint-disable-next-line no-use-before-define
+  apiConfig: ApiConfig
+}
+export type OperationOverride<T> = (options: OperationOverrideOptions<any, any>) => Promise<T>
 `
 }
 
