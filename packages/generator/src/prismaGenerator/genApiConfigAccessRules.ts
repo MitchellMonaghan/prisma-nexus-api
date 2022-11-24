@@ -105,15 +105,24 @@ export type ${modelName}ExistsOperator = {
   return content
 }
 
-const getModelTypes = (models: DMMF.Model[]) => {
-  return `export type Models = ${models.map(m => `'${m.name}'`).join('|')}`
+const getPismaTypes = (datamodel: DMMF.Datamodel) => {
+  const models = datamodel.models
+  const enums = datamodel.enums
+
+  return `
+import {
+  ${models.concat(enums as any).map(m => `${m.name}`).join(',\n  ')}
+} from '@prisma/client'
+
+export type Models = ${models.map(m => `'${m.name}'`).join('|')}
+`
 }
 
 export const genApiConfigAccessRules = async (datamodel: DMMF.Datamodel) => {
   const genericPropertySelectorTypePath = join(__dirname, '../../src/_types/genericPropertySelector.ts')
   const genericPropertySelectorType = fs.readFileSync(genericPropertySelectorTypePath, 'utf8')
 
-  let contents = getModelTypes(datamodel.models)
+  let contents = getPismaTypes(datamodel)
   contents += '\n' + genericPropertySelectorType
   contents += '\n' + genFieldTypes(datamodel.models)
   contents += '\n'

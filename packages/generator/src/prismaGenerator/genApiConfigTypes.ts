@@ -5,16 +5,28 @@ import { capitalize } from 'lodash'
 
 import { writeFileSafely } from '../utils/writeFileSafely'
 
-const getTypeScriptTypeFromPrismaType = (prismaType:string) => {
+const getTypeScriptTypeFromPrismaType = (prismaField: DMMF.Field) => {
+  const { type: prismaType } = prismaField
+
+  let type = ''
   if (prismaType === 'Int' || prismaType === 'Float') {
-    return 'number'
+    type = 'number'
   } else if (prismaType === 'Boolean') {
-    return 'boolean'
+    type = 'boolean'
   } else if (prismaType === 'ID' || prismaType === 'String') {
-    return 'string'
+    type = 'string'
+  } else if (prismaType === 'DateTime') {
+    type = 'Date'
+  } else if (prismaType === 'Json') {
+    type = 'Record<string, any>'
+  } else {
+    type = prismaType
   }
 
-  throw new Error(`Unsupported prisma type ${prismaType}`)
+  if (!prismaField.isRequired) { type = `(${type}|undefined)` }
+  if (prismaField.isList) { type += '[]' }
+
+  return `(${type})`
 }
 
 const genApiConfigType = (models: DMMF.Model[]) => {
@@ -36,7 +48,7 @@ export type ApiConfig = {
 
 const getRequiredFieldResolverName = (model: DMMF.Model, field: DMMF.Field) => `${model.name}${capitalize(field.name)}RequiredFieldResolver`
 const getRequiredFieldResolver = (model: DMMF.Model, field: DMMF.Field) => {
-  const type = getTypeScriptTypeFromPrismaType(field.type)
+  const type = getTypeScriptTypeFromPrismaType(field)
   const requiredFieldResolverName = getRequiredFieldResolverName(model, field)
 
   return `export type ${requiredFieldResolverName} = {
@@ -47,7 +59,7 @@ const getRequiredFieldResolver = (model: DMMF.Model, field: DMMF.Field) => {
 
 const getOptionalFieldResolverName = (model: DMMF.Model, field: DMMF.Field) => `${model.name}${capitalize(field.name)}OptionalFieldResolver`
 const getOptionalFieldResolver = (model: DMMF.Model, field: DMMF.Field) => {
-  const type = getTypeScriptTypeFromPrismaType(field.type)
+  const type = getTypeScriptTypeFromPrismaType(field)
   const optionalFieldResolverName = getOptionalFieldResolverName(model, field)
 
   return `export type ${optionalFieldResolverName} = {
@@ -61,6 +73,7 @@ const genFieldTypes = (models: DMMF.Model[]) => {
   for (let i = 0; i < models.length; i++) {
     const model = models[i]
     const modelName = model.name
+
     const createFieldsTypeName = `${modelName}CreateFields`
     const createFieldsTypes = []
     const updateFieldsTypeName = `${modelName}UpdateFields`
