@@ -3,7 +3,7 @@ import { mutationField } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs, getModelUniqFieldSelect } from '../utils'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, OperationOverrideOptions } from '../../_types'
 
 export interface DeleteAndNotifyOptions {
   modelName: string
@@ -63,10 +63,17 @@ export const deleteOne = (
         ...select
       }
 
+      const overrideOptions:OperationOverrideOptions<any> = {
+        modelName,
+        prismaOperation: 'delete',
+        prismaParams,
+        ctx
+      }
+
       if (deleteConfig.deleteOneOverride) {
-        return deleteConfig.deleteOneOverride(modelName, prismaParams, ctx)
+        return deleteConfig.deleteOneOverride(overrideOptions)
       } else if (allDeleteConfig.deleteOneOverride) {
-        return allDeleteConfig.deleteOneOverride(modelName, prismaParams, ctx)
+        return allDeleteConfig.deleteOneOverride(overrideOptions)
       }
 
       return deleteAndNotify({

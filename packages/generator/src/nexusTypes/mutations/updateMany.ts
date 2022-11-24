@@ -3,7 +3,7 @@ import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs, getModelUniqFieldSelect } from '../utils'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, OperationOverrideOptions } from '../../_types'
 
 export interface UpdateManyAndNotifyOptions {
   modelName: string
@@ -70,10 +70,17 @@ export const updateMany = (
         ...select
       }
 
+      const overrideOptions:OperationOverrideOptions<any> = {
+        modelName,
+        prismaOperation: 'updateMany',
+        prismaParams,
+        ctx
+      }
+
       if (updateConfig.updateManyOverride) {
-        return updateConfig.updateManyOverride(modelName, prismaParams, ctx)
+        return updateConfig.updateManyOverride(overrideOptions)
       } else if (allUpdateConfig.updateManyOverride) {
-        return allUpdateConfig.updateManyOverride(modelName, prismaParams, ctx)
+        return allUpdateConfig.updateManyOverride(overrideOptions)
       }
 
       return updateManyAndNotify({

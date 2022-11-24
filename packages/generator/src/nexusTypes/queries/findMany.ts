@@ -2,7 +2,7 @@ import { DMMF } from '@prisma/generator-helper'
 import { queryField, nonNull, list } from 'nexus'
 
 import { getNexusOperationArgs } from '../utils'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, OperationOverrideOptions } from '../../_types'
 
 export const findMany = (
   modelName: string,
@@ -27,10 +27,17 @@ export const findMany = (
         ...select
       }
 
+      const overrideOptions:OperationOverrideOptions<any> = {
+        modelName,
+        prismaOperation: 'findMany',
+        prismaParams,
+        ctx
+      }
+
       if (readConfig.findManyOverride) {
-        return readConfig.findManyOverride(modelName, prismaParams, ctx)
+        return readConfig.findManyOverride(overrideOptions)
       } else if (allReadConfig.findManyOverride) {
-        return allReadConfig.findManyOverride(modelName, prismaParams, ctx)
+        return allReadConfig.findManyOverride(overrideOptions)
       }
 
       return prisma[modelName].findMany(prismaParams)

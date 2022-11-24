@@ -2,7 +2,7 @@ import { DMMF } from '@prisma/generator-helper'
 import { queryField, nonNull } from 'nexus'
 
 import { getNexusOperationArgs } from '../utils'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, OperationOverrideOptions } from '../../_types'
 
 export const findCount = (
   modelName: string,
@@ -27,10 +27,17 @@ export const findCount = (
         ...select
       }
 
+      const overrideOptions:OperationOverrideOptions<any> = {
+        modelName,
+        prismaOperation: 'count',
+        prismaParams,
+        ctx
+      }
+
       if (readConfig.findCountOverride) {
-        return readConfig.findCountOverride(modelName, prismaParams, ctx)
+        return readConfig.findCountOverride(overrideOptions)
       } else if (allReadConfig.findCountOverride) {
-        return allReadConfig.findCountOverride(modelName, prismaParams, ctx)
+        return allReadConfig.findCountOverride(overrideOptions)
       }
 
       return prisma[modelName].count(prismaParams)

@@ -2,7 +2,7 @@ import { DMMF } from '@prisma/generator-helper'
 import { queryField } from 'nexus'
 
 import { getNexusOperationArgs } from '../utils'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, OperationOverrideOptions } from '../../_types'
 
 export const aggregate = (
   modelName: string,
@@ -27,10 +27,17 @@ export const aggregate = (
         ...select
       }
 
+      const overrideOptions:OperationOverrideOptions<any> = {
+        modelName,
+        prismaOperation: 'aggregate',
+        prismaParams,
+        ctx
+      }
+
       if (readConfig.aggregateOverride) {
-        return readConfig.aggregateOverride(modelName, prismaParams, ctx)
+        return readConfig.aggregateOverride(overrideOptions)
       } else if (allReadConfig.aggregateOverride) {
-        return allReadConfig.aggregateOverride(modelName, prismaParams, ctx)
+        return allReadConfig.aggregateOverride(overrideOptions)
       }
 
       return prisma[modelName].aggregate(prismaParams)

@@ -3,7 +3,7 @@ import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs, getModelUniqFieldSelect } from '../utils'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, OperationOverrideOptions } from '../../_types'
 
 export interface UpsertAndNotifyOptions {
   modelName: string
@@ -80,10 +80,17 @@ export const upsertOne = (
         ...select
       }
 
+      const overrideOptions:OperationOverrideOptions<any> = {
+        modelName,
+        prismaOperation: 'upsert',
+        prismaParams,
+        ctx
+      }
+
       if (upsertConfig.upsertOneOverride) {
-        return upsertConfig.upsertOneOverride(modelName, prismaParams, ctx)
+        return upsertConfig.upsertOneOverride(overrideOptions)
       } else if (allUpsertConfig.upsertOneOverride) {
-        return allUpsertConfig.upsertOneOverride(modelName, prismaParams, ctx)
+        return allUpsertConfig.upsertOneOverride(overrideOptions)
       }
 
       return upsertAndNotify({

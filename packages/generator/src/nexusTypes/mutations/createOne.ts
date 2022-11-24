@@ -3,7 +3,7 @@ import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
 import { getNexusOperationArgs, getModelUniqFieldSelect } from '../utils'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, OperationOverrideOptions } from '../../_types'
 
 export interface CreateAndNotifyOptions {
   modelName: string
@@ -64,10 +64,17 @@ export const createOne = (
         ...select
       }
 
+      const overrideOptions:OperationOverrideOptions<any> = {
+        modelName,
+        prismaOperation: 'create',
+        prismaParams,
+        ctx
+      }
+
       if (createConfig.createOneOverride) {
-        return createConfig.createOneOverride(modelName, prismaParams, ctx)
+        return createConfig.createOneOverride(overrideOptions)
       } else if (allCreateConfig.createOneOverride) {
-        return allCreateConfig.createOneOverride(modelName, prismaParams, ctx)
+        return allCreateConfig.createOneOverride(overrideOptions)
       }
 
       return createAndNotify({

@@ -2,7 +2,7 @@ import { DMMF } from '@prisma/generator-helper'
 import { queryField } from 'nexus'
 
 import { getNexusOperationArgs } from '../utils'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, OperationOverrideOptions } from '../../_types'
 
 export const findUnique = (
   modelName: string,
@@ -27,10 +27,17 @@ export const findUnique = (
         ...select
       }
 
+      const overrideOptions:OperationOverrideOptions<any> = {
+        modelName,
+        prismaOperation: 'findUnique',
+        prismaParams,
+        ctx
+      }
+
       if (readConfig.findUniqueOverride) {
-        return readConfig.findUniqueOverride(modelName, prismaParams, ctx)
+        return readConfig.findUniqueOverride(overrideOptions)
       } else if (allReadConfig.findUniqueOverride) {
-        return allReadConfig.findUniqueOverride(modelName, prismaParams, ctx)
+        return allReadConfig.findUniqueOverride(overrideOptions)
       }
 
       return prisma[modelName].findUnique(prismaParams)

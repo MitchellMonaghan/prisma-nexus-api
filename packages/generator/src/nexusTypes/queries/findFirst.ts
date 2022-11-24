@@ -2,7 +2,7 @@ import { DMMF } from '@prisma/generator-helper'
 import { queryField } from 'nexus'
 
 import { getNexusOperationArgs } from '../utils'
-import { ApiConfig } from '../../_types/apiConfig'
+import { ApiConfig, OperationOverrideOptions } from '../../_types'
 
 export const findFirst = (
   modelName: string,
@@ -27,10 +27,17 @@ export const findFirst = (
         ...select
       }
 
+      const overrideOptions:OperationOverrideOptions<any> = {
+        modelName,
+        prismaOperation: 'findFirst',
+        prismaParams,
+        ctx
+      }
+
       if (readConfig.findFirstOverride) {
-        return readConfig.findFirstOverride(modelName, prismaParams, ctx)
+        return readConfig.findFirstOverride(overrideOptions)
       } else if (allReadConfig.findFirstOverride) {
-        return allReadConfig.findFirstOverride(modelName, prismaParams, ctx)
+        return allReadConfig.findFirstOverride(overrideOptions)
       }
 
       return prisma[modelName].findFirst(prismaParams)
