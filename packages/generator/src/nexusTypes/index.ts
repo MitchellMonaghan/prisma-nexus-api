@@ -275,23 +275,23 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
       const readConfig = modelConfig?.read || {}
       if (!(allReadConfig.disableAll || readConfig.disableAll)) {
         if (!(allReadConfig.disableAggregate || readConfig.disableAggregate)) {
-          nexusSchema.push(aggregate(model.name, queryOutputTypes, inputsWithNoFields))
+          nexusSchema.push(aggregate(model.name, queryOutputTypes, apiConfig, inputsWithNoFields))
         }
 
         if (!(allReadConfig.disableFindCount || readConfig.disableFindCount)) {
-          nexusSchema.push(findCount(model.name, queryOutputTypes, inputsWithNoFields))
+          nexusSchema.push(findCount(model.name, queryOutputTypes, apiConfig, inputsWithNoFields))
         }
 
         if (!(allReadConfig.disableFindFirst || readConfig.disableFindFirst)) {
-          nexusSchema.push(findFirst(model.name, queryOutputTypes, inputsWithNoFields))
+          nexusSchema.push(findFirst(model.name, queryOutputTypes, apiConfig, inputsWithNoFields))
         }
 
         if (!(allReadConfig.disableFindMany || readConfig.disableFindMany)) {
-          nexusSchema.push(findMany(model.name, queryOutputTypes, inputsWithNoFields))
+          nexusSchema.push(findMany(model.name, queryOutputTypes, apiConfig, inputsWithNoFields))
         }
 
         if (!(allReadConfig.disableFindUnique || readConfig.disableFindUnique)) {
-          nexusSchema.push(findUnique(model.name, queryOutputTypes, inputsWithNoFields))
+          nexusSchema.push(findUnique(model.name, queryOutputTypes, apiConfig, inputsWithNoFields))
         }
       }
     }
