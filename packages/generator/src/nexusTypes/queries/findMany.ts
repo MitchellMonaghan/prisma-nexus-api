@@ -27,10 +27,10 @@ export const findMany = (
         ...select
       }
 
-      if (allReadConfig.findManyOverride) {
-        return allReadConfig.findManyOverride(modelName, prismaParams, ctx)
-      } else if (readConfig.findManyOverride) {
+      if (readConfig.findManyOverride) {
         return readConfig.findManyOverride(modelName, prismaParams, ctx)
+      } else if (allReadConfig.findManyOverride) {
+        return allReadConfig.findManyOverride(modelName, prismaParams, ctx)
       }
 
       return prisma[modelName].findMany(prismaParams)

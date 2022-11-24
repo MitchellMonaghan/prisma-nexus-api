@@ -27,10 +27,10 @@ export const findCount = (
         ...select
       }
 
-      if (allReadConfig.findCountOverride) {
-        return allReadConfig.findCountOverride(modelName, prismaParams, ctx)
-      } else if (readConfig.findCountOverride) {
+      if (readConfig.findCountOverride) {
         return readConfig.findCountOverride(modelName, prismaParams, ctx)
+      } else if (allReadConfig.findCountOverride) {
+        return allReadConfig.findCountOverride(modelName, prismaParams, ctx)
       }
 
       return prisma[modelName].count(prismaParams)

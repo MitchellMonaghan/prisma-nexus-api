@@ -63,10 +63,10 @@ export const deleteOne = (
         ...select
       }
 
-      if (allDeleteConfig.deleteOneOverride) {
-        return allDeleteConfig.deleteOneOverride(modelName, prismaParams, ctx)
-      } else if (deleteConfig.deleteOneOverride) {
+      if (deleteConfig.deleteOneOverride) {
         return deleteConfig.deleteOneOverride(modelName, prismaParams, ctx)
+      } else if (allDeleteConfig.deleteOneOverride) {
+        return allDeleteConfig.deleteOneOverride(modelName, prismaParams, ctx)
       }
 
       return deleteAndNotify({

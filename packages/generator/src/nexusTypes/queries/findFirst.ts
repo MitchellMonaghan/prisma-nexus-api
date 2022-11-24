@@ -27,10 +27,10 @@ export const findFirst = (
         ...select
       }
 
-      if (allReadConfig.findFirstOverride) {
-        return allReadConfig.findFirstOverride(modelName, prismaParams, ctx)
-      } else if (readConfig.findFirstOverride) {
+      if (readConfig.findFirstOverride) {
         return readConfig.findFirstOverride(modelName, prismaParams, ctx)
+      } else if (allReadConfig.findFirstOverride) {
+        return allReadConfig.findFirstOverride(modelName, prismaParams, ctx)
       }
 
       return prisma[modelName].findFirst(prismaParams)

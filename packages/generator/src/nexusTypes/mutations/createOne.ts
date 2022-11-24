@@ -64,10 +64,10 @@ export const createOne = (
         ...select
       }
 
-      if (allCreateConfig.createOneOverride) {
-        return allCreateConfig.createOneOverride(modelName, prismaParams, ctx)
-      } else if (createConfig.createOneOverride) {
+      if (createConfig.createOneOverride) {
         return createConfig.createOneOverride(modelName, prismaParams, ctx)
+      } else if (allCreateConfig.createOneOverride) {
+        return allCreateConfig.createOneOverride(modelName, prismaParams, ctx)
       }
 
       return createAndNotify({

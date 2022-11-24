@@ -27,10 +27,10 @@ export const findUnique = (
         ...select
       }
 
-      if (allReadConfig.findUniqueOverride) {
-        return allReadConfig.findUniqueOverride(modelName, prismaParams, ctx)
-      } else if (readConfig.findUniqueOverride) {
+      if (readConfig.findUniqueOverride) {
         return readConfig.findUniqueOverride(modelName, prismaParams, ctx)
+      } else if (allReadConfig.findUniqueOverride) {
+        return allReadConfig.findUniqueOverride(modelName, prismaParams, ctx)
       }
 
       return prisma[modelName].findUnique(prismaParams)

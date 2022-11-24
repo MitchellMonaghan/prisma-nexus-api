@@ -59,10 +59,10 @@ export const deleteMany = (
         ...args
       }
 
-      if (allDeleteConfig.deleteManyOverride) {
-        return allDeleteConfig.deleteManyOverride(modelName, prismaParams, ctx)
-      } else if (deleteConfig.deleteManyOverride) {
+      if (deleteConfig.deleteManyOverride) {
         return deleteConfig.deleteManyOverride(modelName, prismaParams, ctx)
+      } else if (allDeleteConfig.deleteManyOverride) {
+        return allDeleteConfig.deleteManyOverride(modelName, prismaParams, ctx)
       }
 
       return deleteManyAndNotify({

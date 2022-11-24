@@ -27,10 +27,10 @@ export const aggregate = (
         ...select
       }
 
-      if (allReadConfig.aggregateOverride) {
-        return allReadConfig.aggregateOverride(modelName, prismaParams, ctx)
-      } else if (readConfig.aggregateOverride) {
+      if (readConfig.aggregateOverride) {
         return readConfig.aggregateOverride(modelName, prismaParams, ctx)
+      } else if (allReadConfig.aggregateOverride) {
+        return allReadConfig.aggregateOverride(modelName, prismaParams, ctx)
       }
 
       return prisma[modelName].aggregate(prismaParams)

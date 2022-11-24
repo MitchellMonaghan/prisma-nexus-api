@@ -80,10 +80,10 @@ export const upsertOne = (
         ...select
       }
 
-      if (allUpsertConfig.upsertOneOverride) {
-        return allUpsertConfig.upsertOneOverride(modelName, prismaParams, ctx)
-      } else if (upsertConfig.upsertOneOverride) {
+      if (upsertConfig.upsertOneOverride) {
         return upsertConfig.upsertOneOverride(modelName, prismaParams, ctx)
+      } else if (allUpsertConfig.upsertOneOverride) {
+        return allUpsertConfig.upsertOneOverride(modelName, prismaParams, ctx)
       }
 
       return upsertAndNotify({

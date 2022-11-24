@@ -64,10 +64,10 @@ export const updateOne = (
         ...select
       }
 
-      if (allUpdateConfig.updateOneOverride) {
-        return allUpdateConfig.updateOneOverride(modelName, prismaParams, ctx)
-      } else if (updateConfig.updateOneOverride) {
+      if (updateConfig.updateOneOverride) {
         return updateConfig.updateOneOverride(modelName, prismaParams, ctx)
+      } else if (allUpdateConfig.updateOneOverride) {
+        return allUpdateConfig.updateOneOverride(modelName, prismaParams, ctx)
       }
 
       return updateAndNotify({

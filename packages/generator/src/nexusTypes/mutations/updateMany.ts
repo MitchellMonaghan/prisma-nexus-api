@@ -70,10 +70,10 @@ export const updateMany = (
         ...select
       }
 
-      if (allUpdateConfig.updateManyOverride) {
-        return allUpdateConfig.updateManyOverride(modelName, prismaParams, ctx)
-      } else if (updateConfig.updateManyOverride) {
+      if (updateConfig.updateManyOverride) {
         return updateConfig.updateManyOverride(modelName, prismaParams, ctx)
+      } else if (allUpdateConfig.updateManyOverride) {
+        return allUpdateConfig.updateManyOverride(modelName, prismaParams, ctx)
       }
 
       return updateManyAndNotify({
