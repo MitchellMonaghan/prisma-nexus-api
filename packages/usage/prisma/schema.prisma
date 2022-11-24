@@ -1,9 +1,9 @@
-generator quickMicro {
-  provider = "prisma-nexus-api"
-}
-
 generator client {
   provider = "prisma-client-js"
+}
+
+generator api {
+  provider = "prisma-nexus-api"
 }
 
 datasource db {

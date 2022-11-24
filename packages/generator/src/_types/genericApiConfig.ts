@@ -72,6 +72,7 @@ export type ModelDeleteConfiguration = {
 }
 
 export type ModelConfiguration = {
+    disableAll?: boolean
     create?: ModelCreateConfiguration
     read?: ModelReadConfiguration
     update?: ModelUpdateConfiguration

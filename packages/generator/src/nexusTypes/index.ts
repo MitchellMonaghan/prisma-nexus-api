@@ -120,10 +120,12 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
   if (data.inputObjectTypes.model) { inputObjectTypes.push(...data.inputObjectTypes.model) }
   inputObjectTypes.forEach((input) => {
     const modelName = getMatchingModel(input.name, modelNames)
+    const modelConfig = apiDataConfig[modelName] || {}
+
     let inputFields = filterInputsWithApiConfig(modelName, input, apiConfig)
     inputFields = inputFields.filter(f => !inputsWithNoFields.includes(f.inputTypes[0].type.toString()))
 
-    if (inputFields.length === 0) {
+    if (inputFields.length === 0 || modelConfig.disableAll) {
       inputsWithNoFields.push(input.name)
       return
     }
@@ -176,7 +178,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
       const removedFields = modelConfig?.read?.removedFields || []
 
       const outputFields = type.fields.filter(f => !(removedFields.includes(f.name) || outputsWithNoFields.includes(f.outputType.type.toString())))
-      if (outputFields.length === 0) {
+      if (outputFields.length === 0 || modelConfig.disableAll) {
         outputsWithNoFields.push(type.name)
         return
       }
@@ -215,13 +217,13 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
   models.forEach((model) => {
     if (allTypes.includes(model.name)) { return }
 
-    const modelConfig = apiDataConfig[model.name]
+    const modelConfig = apiDataConfig[model.name] || {}
     const filteredFields = model.fields.filter((field) => {
       const excludeFields = modelConfig?.read?.removedFields || []
       return !excludeFields.includes(field.name)
     })
 
-    if (filteredFields.length === 0) {
+    if (filteredFields.length === 0 || modelConfig.disableAll) {
       return
     }
 

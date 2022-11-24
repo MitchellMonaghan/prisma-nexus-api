@@ -206,6 +206,7 @@ export type ${modelName}ModelDeleteConfiguration = {
 }
 
 export type ${modelName}ModelConfiguration = {
+  disableAll?: boolean
   create?: ${modelName}ModelCreateConfiguration,
   read?: ${modelName}ModelReadConfiguration,
   update?: ${modelName}ModelUpdateConfiguration,
