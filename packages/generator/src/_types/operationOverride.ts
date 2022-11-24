@@ -1,8 +1,11 @@
-export type OperationOverrideOptions<T> = {
+import { ApiConfig } from './apiConfig'
+
+export type OperationOverrideOptions<ParamsType, ContextType> = {
     modelName:string
     prismaOperation:string
-    prismaParams: T
-    ctx: any
+    prismaParams: ParamsType
+    ctx: ContextType
+    apiConfig: ApiConfig
 }
 
-export type OperationOverride<T> = (options: OperationOverrideOptions<any>) => Promise<T>
+export type OperationOverride<T> = (options: OperationOverrideOptions<any, any>) => Promise<T>

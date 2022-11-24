@@ -5,7 +5,7 @@ import { isEmpty } from 'lodash'
 import { getNexusOperationArgs, getModelUniqFieldSelect } from '../utils'
 import { ApiConfig, OperationOverrideOptions } from '../../_types'
 
-export interface UpdateAndNotifyOptions {
+export interface UpdateAndNotifyOptions extends OperationOverrideOptions<any, any> {
   modelName: string
   prismaParams: any
   apiConfig: ApiConfig
@@ -64,11 +64,12 @@ export const updateOne = (
         ...select
       }
 
-      const overrideOptions:OperationOverrideOptions<any> = {
+      const overrideOptions:OperationOverrideOptions<any, any> = {
         modelName,
         prismaOperation: 'update',
         prismaParams,
-        ctx
+        ctx,
+        apiConfig
       }
 
       if (updateConfig.updateOneOverride) {
@@ -77,11 +78,7 @@ export const updateOne = (
         return allUpdateConfig.updateOneOverride(overrideOptions)
       }
 
-      return updateAndNotify({
-        modelName,
-        prismaParams,
-        apiConfig
-      })
+      return updateAndNotify(overrideOptions)
     }
   })
 }

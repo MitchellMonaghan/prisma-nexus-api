@@ -5,10 +5,7 @@ import { isEmpty } from 'lodash'
 import { getNexusOperationArgs, getModelUniqFieldSelect } from '../utils'
 import { ApiConfig, OperationOverrideOptions } from '../../_types'
 
-export interface CreateAndNotifyOptions {
-  modelName: string
-  prismaParams: any
-  apiConfig: ApiConfig
+export interface CreateAndNotifyOptions extends OperationOverrideOptions<any, any> {
   createEvent?: string
 }
 
@@ -64,11 +61,12 @@ export const createOne = (
         ...select
       }
 
-      const overrideOptions:OperationOverrideOptions<any> = {
+      const overrideOptions:OperationOverrideOptions<any, any> = {
         modelName,
         prismaOperation: 'create',
         prismaParams,
-        ctx
+        ctx,
+        apiConfig
       }
 
       if (createConfig.createOneOverride) {
@@ -77,11 +75,7 @@ export const createOne = (
         return allCreateConfig.createOneOverride(overrideOptions)
       }
 
-      return createAndNotify({
-        modelName,
-        prismaParams,
-        apiConfig
-      })
+      return createAndNotify(overrideOptions)
     }
   })
 }

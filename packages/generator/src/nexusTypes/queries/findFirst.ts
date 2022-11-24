@@ -27,11 +27,12 @@ export const findFirst = (
         ...select
       }
 
-      const overrideOptions:OperationOverrideOptions<any> = {
+      const overrideOptions:OperationOverrideOptions<any, any> = {
         modelName,
         prismaOperation: 'findFirst',
         prismaParams,
-        ctx
+        ctx,
+        apiConfig
       }
 
       if (readConfig.findFirstOverride) {

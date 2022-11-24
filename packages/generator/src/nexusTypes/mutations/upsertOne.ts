@@ -5,7 +5,7 @@ import { isEmpty } from 'lodash'
 import { getNexusOperationArgs, getModelUniqFieldSelect } from '../utils'
 import { ApiConfig, OperationOverrideOptions } from '../../_types'
 
-export interface UpsertAndNotifyOptions {
+export interface UpsertAndNotifyOptions extends OperationOverrideOptions<any, any> {
   modelName: string
   prismaParams: any
   apiConfig: ApiConfig
@@ -80,11 +80,12 @@ export const upsertOne = (
         ...select
       }
 
-      const overrideOptions:OperationOverrideOptions<any> = {
+      const overrideOptions:OperationOverrideOptions<any, any> = {
         modelName,
         prismaOperation: 'upsert',
         prismaParams,
-        ctx
+        ctx,
+        apiConfig
       }
 
       if (upsertConfig.upsertOneOverride) {
@@ -93,11 +94,7 @@ export const upsertOne = (
         return allUpsertConfig.upsertOneOverride(overrideOptions)
       }
 
-      return upsertAndNotify({
-        modelName,
-        prismaParams,
-        apiConfig
-      })
+      return upsertAndNotify(overrideOptions)
     }
   })
 }

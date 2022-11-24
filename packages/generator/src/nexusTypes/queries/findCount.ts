@@ -27,11 +27,12 @@ export const findCount = (
         ...select
       }
 
-      const overrideOptions:OperationOverrideOptions<any> = {
+      const overrideOptions:OperationOverrideOptions<any, any> = {
         modelName,
         prismaOperation: 'count',
         prismaParams,
-        ctx
+        ctx,
+        apiConfig
       }
 
       if (readConfig.findCountOverride) {

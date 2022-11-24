@@ -5,7 +5,7 @@ import { isEmpty } from 'lodash'
 import { getNexusOperationArgs, getModelUniqFieldSelect } from '../utils'
 import { ApiConfig, OperationOverrideOptions } from '../../_types'
 
-export interface DeleteAndNotifyOptions {
+export interface DeleteAndNotifyOptions extends OperationOverrideOptions<any, any> {
   modelName: string
   prismaParams: any
   apiConfig: ApiConfig
@@ -63,11 +63,12 @@ export const deleteOne = (
         ...select
       }
 
-      const overrideOptions:OperationOverrideOptions<any> = {
+      const overrideOptions:OperationOverrideOptions<any, any> = {
         modelName,
         prismaOperation: 'delete',
         prismaParams,
-        ctx
+        ctx,
+        apiConfig
       }
 
       if (deleteConfig.deleteOneOverride) {
@@ -76,11 +77,7 @@ export const deleteOne = (
         return allDeleteConfig.deleteOneOverride(overrideOptions)
       }
 
-      return deleteAndNotify({
-        modelName,
-        prismaParams,
-        apiConfig
-      })
+      return deleteAndNotify(overrideOptions)
     }
   })
 }

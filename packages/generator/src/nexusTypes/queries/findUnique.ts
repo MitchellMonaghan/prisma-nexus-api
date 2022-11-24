@@ -27,11 +27,12 @@ export const findUnique = (
         ...select
       }
 
-      const overrideOptions:OperationOverrideOptions<any> = {
+      const overrideOptions:OperationOverrideOptions<any, any> = {
         modelName,
         prismaOperation: 'findUnique',
         prismaParams,
-        ctx
+        ctx,
+        apiConfig
       }
 
       if (readConfig.findUniqueOverride) {

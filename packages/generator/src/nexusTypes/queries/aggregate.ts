@@ -27,11 +27,12 @@ export const aggregate = (
         ...select
       }
 
-      const overrideOptions:OperationOverrideOptions<any> = {
+      const overrideOptions:OperationOverrideOptions<any, any> = {
         modelName,
         prismaOperation: 'aggregate',
         prismaParams,
-        ctx
+        ctx,
+        apiConfig
       }
 
       if (readConfig.aggregateOverride) {

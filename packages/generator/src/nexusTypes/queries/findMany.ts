@@ -27,11 +27,12 @@ export const findMany = (
         ...select
       }
 
-      const overrideOptions:OperationOverrideOptions<any> = {
+      const overrideOptions:OperationOverrideOptions<any, any> = {
         modelName,
         prismaOperation: 'findMany',
         prismaParams,
-        ctx
+        ctx,
+        apiConfig
       }
 
       if (readConfig.findManyOverride) {
