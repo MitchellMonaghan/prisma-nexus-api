@@ -27,6 +27,21 @@ import {
   deleteMany
 } from './mutations'
 
+export {
+  createAndNotify,
+  CreateAndNotifyOptions,
+  updateAndNotify,
+  UpdateAndNotifyOptions,
+  updateManyAndNotify,
+  UpdateManyAndNotifyOptions,
+  upsertAndNotify,
+  UpsertAndNotifyOptions,
+  deleteAndNotify,
+  DeleteAndNotifyOptions,
+  deleteManyAndNotify,
+  DeleteManyAndNotifyOptions
+} from './mutations'
+
 type FieldConfig = {
   [key: string]: any;
   type: string;
@@ -283,7 +298,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
     if (mutationOutputTypes) {
       const createConfig = modelConfig?.create || {}
       if (!createConfig.disableAll) {
-        if (!createConfig.disableCreateOne) {
+        if (!createConfig.disableAll) {
           nexusSchema.push(createOne(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
         }
       }
@@ -299,11 +314,8 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
         }
       }
 
-      if (!(createConfig.disableAll ||
-        createConfig.disableUpsertOne ||
-        updateConfig.disableAll ||
-        updateConfig.disableUpsertOne)
-      ) {
+      const upsertConfig = modelConfig?.upsert || {}
+      if (!upsertConfig.disableAll) {
         nexusSchema.push(upsertOne(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
       }
 
@@ -336,18 +348,10 @@ const filterInputsWithApiConfig = (modelName:string, input: DMMF.InputType, apiC
   const config = apiConfig.data[modelName as keyof ApiConfig]
 
   const isCreateInput = input.name.toLowerCase().includes('create')
-  const removedCreateFields = config?.create?.removedFields?.map((rf) => {
-    if (typeof rf === 'string') { return rf } else {
-      return rf.fieldName
-    }
-  }) || []
+  const removedCreateFields = config?.create?.removedFields || []
 
   const isUpdateInput = input.name.toLowerCase().includes('update')
-  const removedUpdateFields = config?.update?.removedFields?.map((rf) => {
-    if (typeof rf === 'string') { return rf } else {
-      return rf.fieldName
-    }
-  }) || []
+  const removedUpdateFields = config?.update?.removedFields || []
 
   const isReadInput = !(isCreateInput || isUpdateInput)
   const removedReadFields = config?.read?.removedFields || []

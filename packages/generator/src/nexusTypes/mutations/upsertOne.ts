@@ -2,8 +2,51 @@ import { DMMF } from '@prisma/generator-helper'
 import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
-import { getNexusOperationArgs, getConfiguredFieldResolvers } from '../getNexusArgs'
-import { ApiConfig, ModelUniqFields } from '../../_types/apiConfig'
+import { getNexusOperationArgs, getModelUniqFieldSelect } from '../getNexusArgs'
+import { ApiConfig } from '../../_types/apiConfig'
+
+export interface UpsertAndNotifyOptions {
+  modelName: string
+  prismaParams: any
+  apiConfig: ApiConfig
+  createEvent?: string
+  updateEvent?: string
+}
+
+export const upsertAndNotify = async (options: UpsertAndNotifyOptions) => {
+  const {
+    modelName,
+    prismaParams,
+    apiConfig,
+    createEvent,
+    updateEvent
+  } = options
+
+  const { prisma, pubsub } = apiConfig
+  const prismaModel = (prisma as any)[modelName]
+
+  const uniqFieldSelect = getModelUniqFieldSelect(modelName)
+  const count = await prismaModel.count({
+    ...prismaParams
+  })
+  const itemExists = count > 0
+
+  const result = await prismaModel.upsert({
+    ...prismaParams,
+    select: {
+      ...prismaParams.select,
+      ...uniqFieldSelect
+    }
+  })
+
+  if (itemExists) {
+    pubsub?.publish(createEvent || `${modelName}_UPDATED`, result)
+  } else {
+    pubsub?.publish(updateEvent || `${modelName}_CREATED`, result)
+  }
+
+  return result
+}
 
 export const upsertOne = (
   modelName: string,
@@ -12,8 +55,7 @@ export const upsertOne = (
   inputsWithNoFields:string[]
 ) => {
   const modelConfig = apiConfig.data[modelName] || {}
-  const createConfig = modelConfig.create || {}
-  const updateConfig = modelConfig.update || {}
+  const upsertConfig = modelConfig.upsert || {}
 
   const mutationName = `upsertOne${modelName}`
   const args = getNexusOperationArgs(mutationName, mutationOutputTypes, inputsWithNoFields)
@@ -25,81 +67,26 @@ export const upsertOne = (
   return mutationField(mutationName, {
     type: nonNull(modelName),
     args,
-    resolve: async (parent, args, ctx, info) => {
+    resolve: async (_parent, args, ctx) => {
       if (!args.where) { args.where = {} }
       if (!args.create) { args.create = {} }
       if (!args.update) { args.update = {} }
 
-      const { prisma, select } = ctx
-
-      if (createConfig) {
-        const fieldResolvers = await getConfiguredFieldResolvers(
-          parent,
-          args,
-          ctx,
-          info,
-          createConfig.removedFields || [])
-
-        args.create = {
-          ...args.create,
-          ...fieldResolvers
-        }
-      }
-
-      if (updateConfig) {
-        const fieldResolvers = await getConfiguredFieldResolvers(
-          parent,
-          args,
-          ctx,
-          info,
-          updateConfig.removedFields || [])
-
-        args.update = {
-          ...args.update,
-          ...fieldResolvers
-        }
-      }
-
-      if (createConfig.beforeUpsertOne) {
-        const canCreate = await createConfig.beforeUpsertOne(parent, args, ctx, info)
-        if (!canCreate) { throw new Error('Unauthorized') }
-      }
-      if (updateConfig.beforeUpsertOne) {
-        const canUpdate = await updateConfig.beforeUpsertOne(parent, args, ctx, info)
-        if (!canUpdate) { throw new Error('Unauthorized') }
-      }
-
-      const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
-        accumulator[currentValue] = true
-        return accumulator
-      }, {} as Record<string, boolean>)
-
-      const count = await prisma[modelName].count({
-        ...args
-      })
-      const itemExists = count > 0
-
-      const result = await prisma[modelName].upsert({
+      const { select } = ctx
+      const prismaParams = {
         ...args,
-        select: {
-          ...select.select,
-          ...uniqFieldSelect
-        }
-      })
-
-      if (itemExists) {
-        if (updateConfig.afterUpdateOne) {
-          await updateConfig.afterUpdateOne(result, args, ctx, info)
-        }
-        apiConfig.pubsub?.publish(`${modelName}_UPDATED`, result)
-      } else {
-        if (createConfig.afterCreateOne) {
-          await createConfig.afterCreateOne(result, args, ctx, info)
-        }
-        apiConfig.pubsub?.publish(`${modelName}_CREATED`, result)
+        ...select
       }
 
-      return result
+      if (upsertConfig.upsertOneOverride) {
+        return upsertConfig.upsertOneOverride(prismaParams, ctx)
+      }
+
+      return upsertAndNotify({
+        modelName,
+        prismaParams,
+        apiConfig
+      })
     }
   })
 }

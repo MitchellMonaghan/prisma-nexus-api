@@ -2,8 +2,46 @@ import { DMMF } from '@prisma/generator-helper'
 import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
-import { getNexusOperationArgs, getConfiguredFieldResolvers } from '../getNexusArgs'
-import { ApiConfig, ModelUniqFields } from '../../_types/apiConfig'
+import { getNexusOperationArgs, getModelUniqFieldSelect } from '../getNexusArgs'
+import { ApiConfig } from '../../_types/apiConfig'
+
+export interface UpdateManyAndNotifyOptions {
+  modelName: string
+  prismaParams: any
+  apiConfig: ApiConfig
+  updateEvent?: string
+}
+
+export const updateManyAndNotify = async (options:UpdateManyAndNotifyOptions) => {
+  const {
+    modelName,
+    prismaParams,
+    apiConfig,
+    updateEvent
+  } = options
+  const { prisma, pubsub } = apiConfig
+  const prismaModel = (prisma as any)[modelName]
+
+  const uniqFieldSelect = getModelUniqFieldSelect(modelName)
+  const result = await prismaModel.updateMany({
+    ...prismaParams,
+    select: {
+      ...prismaParams.select,
+      uniqFieldSelect
+    }
+  })
+  const updatedItems = await prismaModel.findMany({
+    ...prismaParams,
+    select: {
+      ...prismaParams.select,
+      uniqFieldSelect
+    }
+  })
+
+  pubsub?.publish(updateEvent || `${modelName}_UPDATED`, updatedItems)
+
+  return result
+}
 
 export const updateMany = (
   modelName: string,
@@ -23,47 +61,22 @@ export const updateMany = (
   return mutationField(mutationName, {
     type: nonNull('BatchPayload'),
     args,
-    resolve: async (parent, args, ctx, info) => {
-      const { where } = args
-      const { prisma } = ctx
-
-      if (updateConfig) {
-        const fieldResolvers = await getConfiguredFieldResolvers(
-          parent,
-          args,
-          ctx,
-          info,
-          updateConfig.removedFields || [])
-
-        args.data = {
-          ...args.data,
-          ...fieldResolvers
-        }
+    resolve: async (_parent, args, ctx) => {
+      const { select } = ctx
+      const prismaParams = {
+        ...args,
+        ...select
       }
 
-      if (updateConfig.beforeUpdateMany) {
-        const canUpdate = await updateConfig.beforeUpdateMany(parent, args, ctx, info)
-        if (!canUpdate) { throw new Error('Unauthorized') }
+      if (updateConfig.updateManyOverride) {
+        return updateConfig.updateManyOverride(prismaParams, ctx)
       }
 
-      const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
-        accumulator[currentValue] = true
-        return accumulator
-      }, {} as Record<string, boolean>)
-
-      const itemsToBeUpdated = await prisma[modelName].findMany({
-        where,
-        select: uniqFieldSelect
+      return updateManyAndNotify({
+        modelName,
+        prismaParams,
+        apiConfig
       })
-      const result = await prisma[modelName].updateMany(args)
-
-      if (updateConfig.afterUpdateMany) {
-        await updateConfig.afterUpdateMany(result, args, ctx, info)
-      }
-
-      apiConfig.pubsub?.publish(`${modelName}_UPDATED`, itemsToBeUpdated)
-
-      return result
     }
   })
 }

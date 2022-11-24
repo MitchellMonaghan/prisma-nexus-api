@@ -111,6 +111,9 @@ const getPismaTypes = (datamodel: DMMF.Datamodel) => {
 
   return `
 import {
+  PrismaClient,
+  BatchPayload,
+  ${models.map(m => `Get${m.name}AggregateType`).join(',\n  ')},
   ${models.concat(enums as any).map(m => `${m.name}`).join(',\n  ')}
 } from '@prisma/client'
 

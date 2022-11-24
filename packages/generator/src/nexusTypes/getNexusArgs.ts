@@ -1,7 +1,6 @@
 import { DMMF } from '@prisma/generator-helper'
 import { nonNull, list } from 'nexus'
 
-import { FieldResolver } from '../_types/genericApiConfig'
 import {
   AndOperator,
   OrOperator,
@@ -9,6 +8,8 @@ import {
   ExistsOperator,
   PropertySelector
 } from '../_types/genericPropertySelector'
+
+import { ModelUniqFields } from '../_types/apiConfig'
 
 const getType = (arg: DMMF.SchemaArg) => {
   let type = `${arg.inputTypes[0].type}` as any
@@ -44,24 +45,13 @@ export const getNexusOperationArgs = (operationName: string, outputTypes: DMMF.O
   return getNexusArgs(mutationPrismaType?.args || [], inputsWithNoFields)
 }
 
-export const getConfiguredFieldResolvers = async (
-  parent:any,
-  args:any,
-  ctx:any,
-  info:any,
-  removedFields:(string | FieldResolver)[]
-) => {
-  const data = {} as Record<string, any>
-  for (let i = 0; i < removedFields.length; i++) {
-    const removedField = removedFields[i]
-    const isString = typeof removedField === 'string'
+export const getModelUniqFieldSelect = (modelName: string) => {
+  const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
+    accumulator[currentValue] = true
+    return accumulator
+  }, {} as Record<string, boolean>)
 
-    if (isString) { continue }
-
-    data[removedField.fieldName] = await removedField.resolver(parent, args, ctx, info)
-  }
-
-  return data
+  return uniqFieldSelect
 }
 
 export const runAccessConfiguration = async (access?: (AndOperator | OrOperator | NotOperator | ExistsOperator | PropertySelector)[] | undefined) => {

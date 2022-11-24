@@ -9,10 +9,9 @@ import {
 export const isModelDisabled = (modelApiConfiguration?: ModelConfiguration) => {
   if (!modelApiConfiguration) { return false }
 
-  const upsertDisabled = modelApiConfiguration?.create?.disableUpsertOne ||
-    modelApiConfiguration?.update?.disableUpsertOne
+  const upsertDisabled = modelApiConfiguration?.upsert?.disableAll
 
-  const allCreatesDisabled = modelApiConfiguration?.create?.disableCreateOne && upsertDisabled
+  const allCreatesDisabled = modelApiConfiguration?.create?.disableAll && upsertDisabled
 
   const createDisabled = modelApiConfiguration?.create?.disableAll || allCreatesDisabled
 
@@ -44,25 +43,13 @@ export const isModelDisabled = (modelApiConfiguration?: ModelConfiguration) => {
 
 export const getDisabledFields = (modelApiConfiguration?: ModelConfiguration) => {
   // excludedCreateFields means removed from create inputs
-  const excludedCreateFields = modelApiConfiguration?.create?.removedFields?.map((rf) => {
-    if (typeof rf === 'string') {
-      return rf
-    } else {
-      return rf.fieldName
-    }
-  }) || []
+  const excludedCreateFields = modelApiConfiguration?.create?.removedFields || []
 
   // excludedReadFields means removed from read inputs/outputs
   const excludedReadFields = modelApiConfiguration?.read?.removedFields || []
 
   // excludedUpdateFields means removed from update inputs
-  const excludedUpdateFields = modelApiConfiguration?.update?.removedFields?.map((rf) => {
-    if (typeof rf === 'string') {
-      return rf
-    } else {
-      return rf.fieldName
-    }
-  }) || []
+  const excludedUpdateFields = modelApiConfiguration?.update?.removedFields || []
 
   return intersection<string>(excludedCreateFields, excludedReadFields, excludedUpdateFields)
 }

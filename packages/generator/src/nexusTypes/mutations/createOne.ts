@@ -2,8 +2,39 @@ import { DMMF } from '@prisma/generator-helper'
 import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
-import { getNexusOperationArgs, getConfiguredFieldResolvers } from '../getNexusArgs'
-import { ApiConfig, ModelUniqFields } from '../../_types/apiConfig'
+import { getNexusOperationArgs, getModelUniqFieldSelect } from '../getNexusArgs'
+import { ApiConfig } from '../../_types/apiConfig'
+
+export interface CreateAndNotifyOptions {
+  modelName: string
+  prismaParams: any
+  apiConfig: ApiConfig
+  createEvent?: string
+}
+
+export const createAndNotify = async (options:CreateAndNotifyOptions) => {
+  const {
+    modelName,
+    prismaParams,
+    apiConfig,
+    createEvent
+  } = options
+  const { prisma, pubsub } = apiConfig
+  const prismaModel = (prisma as any)[modelName]
+
+  const uniqFieldSelect = getModelUniqFieldSelect(modelName)
+  const result = await prismaModel.create({
+    ...prismaParams,
+    select: {
+      ...prismaParams.select,
+      ...uniqFieldSelect
+    }
+  })
+
+  pubsub?.publish(createEvent || `${modelName}_CREATED`, result)
+
+  return result
+}
 
 export const createOne = (
   modelName: string,
@@ -23,49 +54,23 @@ export const createOne = (
   return mutationField(mutationName, {
     type: nonNull(modelName),
     args,
-    resolve: async (parent, args, ctx, info) => {
+    resolve: async (_parent, args, ctx) => {
       if (!args.data) { args.data = {} }
-      const { prisma, select } = ctx
-
-      if (createConfig) {
-        const fieldResolvers = await getConfiguredFieldResolvers(
-          parent,
-          args,
-          ctx,
-          info,
-          createConfig.removedFields || [])
-
-        args.data = {
-          ...args.data,
-          ...fieldResolvers
-        }
-      }
-
-      if (createConfig.beforeCreateOne) {
-        const canCreate = await createConfig.beforeCreateOne(parent, args, ctx, info)
-        if (!canCreate) { throw new Error('Unauthorized') }
-      }
-
-      const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
-        accumulator[currentValue] = true
-        return accumulator
-      }, {} as Record<string, boolean>)
-
-      const result = await prisma[modelName].create({
+      const { select } = ctx
+      const prismaParams = {
         ...args,
-        select: {
-          ...select.select,
-          ...uniqFieldSelect
-        }
-      })
-
-      if (createConfig.afterCreateOne) {
-        await createConfig.afterCreateOne(result, args, ctx, info)
+        ...select
       }
 
-      apiConfig.pubsub?.publish(`${modelName}_CREATED`, result)
+      if (createConfig.createOneOverride) {
+        return createConfig.createOneOverride(prismaParams, ctx)
+      }
 
-      return result
+      return createAndNotify({
+        modelName,
+        prismaParams,
+        apiConfig
+      })
     }
   })
 }

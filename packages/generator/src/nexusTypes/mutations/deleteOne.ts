@@ -2,8 +2,39 @@ import { DMMF } from '@prisma/generator-helper'
 import { mutationField } from 'nexus'
 import { isEmpty } from 'lodash'
 
-import { getNexusOperationArgs } from '../getNexusArgs'
-import { ApiConfig, ModelUniqFields } from '../../_types/apiConfig'
+import { getNexusOperationArgs, getModelUniqFieldSelect } from '../getNexusArgs'
+import { ApiConfig } from '../../_types/apiConfig'
+
+export interface DeleteAndNotifyOptions {
+  modelName: string
+  prismaParams: any
+  apiConfig: ApiConfig
+  deleteEvent?: string
+}
+
+export const deleteAndNotify = async (options:DeleteAndNotifyOptions) => {
+  const {
+    modelName,
+    prismaParams,
+    apiConfig,
+    deleteEvent
+  } = options
+  const { prisma, pubsub } = apiConfig
+  const prismaModel = (prisma as any)[modelName]
+
+  const uniqFieldSelect = getModelUniqFieldSelect(modelName)
+  const result = await prismaModel.delete({
+    ...prismaParams,
+    select: {
+      ...prismaParams.select,
+      ...uniqFieldSelect
+    }
+  })
+
+  pubsub?.publish(deleteEvent || `${modelName}_DELETED`, result)
+
+  return result
+}
 
 export const deleteOne = (
   modelName: string,
@@ -23,35 +54,22 @@ export const deleteOne = (
   return mutationField(mutationName, {
     type: modelName,
     args,
-    resolve: async (parent, args, ctx, info) => {
-      const { where } = args
-      const { prisma, select } = ctx
-
-      if (deleteConfig.beforeDeleteOne) {
-        const canDelete = await deleteConfig.beforeDeleteOne(parent, args, ctx, info)
-        if (!canDelete) { throw new Error('Unauthorized') }
+    resolve: async (_parent, args, ctx) => {
+      const { select } = ctx
+      const prismaParams = {
+        ...args,
+        ...select
       }
 
-      const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
-        accumulator[currentValue] = true
-        return accumulator
-      }, {} as Record<string, boolean>)
+      if (deleteConfig.deleteOneOverride) {
+        return deleteConfig.deleteOneOverride(prismaParams, ctx)
+      }
 
-      const result = await prisma[modelName].delete({
-        where,
-        select: {
-          ...select.select,
-          ...uniqFieldSelect
-        }
+      return deleteAndNotify({
+        modelName,
+        prismaParams,
+        apiConfig
       })
-
-      if (deleteConfig.afterDeleteOne) {
-        await deleteConfig.afterDeleteOne(result, args, ctx, info)
-      }
-
-      apiConfig.pubsub?.publish(`${modelName}_DELETED`, result)
-
-      return result
     }
   })
 }

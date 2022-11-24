@@ -2,8 +2,39 @@ import { DMMF } from '@prisma/generator-helper'
 import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
-import { getNexusOperationArgs, getConfiguredFieldResolvers } from '../getNexusArgs'
-import { ApiConfig, ModelUniqFields } from '../../_types/apiConfig'
+import { getNexusOperationArgs, getModelUniqFieldSelect } from '../getNexusArgs'
+import { ApiConfig } from '../../_types/apiConfig'
+
+export interface UpdateAndNotifyOptions {
+  modelName: string
+  prismaParams: any
+  apiConfig: ApiConfig
+  updateEvent?: string
+}
+
+export const updateAndNotify = async (options:UpdateAndNotifyOptions) => {
+  const {
+    modelName,
+    prismaParams,
+    apiConfig,
+    updateEvent
+  } = options
+  const { prisma, pubsub } = apiConfig
+  const prismaModel = (prisma as any)[modelName]
+
+  const uniqFieldSelect = getModelUniqFieldSelect(modelName)
+  const result = await prismaModel.update({
+    ...prismaParams,
+    select: {
+      ...prismaParams.select,
+      ...uniqFieldSelect
+    }
+  })
+
+  pubsub?.publish(updateEvent || `${modelName}_UPDATED`, result)
+
+  return result
+}
 
 export const updateOne = (
   modelName: string,
@@ -23,49 +54,23 @@ export const updateOne = (
   return mutationField(mutationName, {
     type: nonNull(modelName),
     args,
-    resolve: async (parent, args, ctx, info) => {
+    resolve: async (_parent, args, ctx) => {
       if (!args.data) { args.data = {} }
-      const { prisma, select } = ctx
-
-      if (updateConfig) {
-        const fieldResolvers = await getConfiguredFieldResolvers(
-          parent,
-          args,
-          ctx,
-          info,
-          updateConfig.removedFields || [])
-
-        args.data = {
-          ...args.data,
-          ...fieldResolvers
-        }
-      }
-
-      if (updateConfig.beforeUpdateOne) {
-        const canUpdate = await updateConfig.beforeUpdateOne(parent, args, ctx, info)
-        if (!canUpdate) { throw new Error('Unauthorized') }
-      }
-
-      const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
-        accumulator[currentValue] = true
-        return accumulator
-      }, {} as Record<string, boolean>)
-
-      const result = await prisma[modelName].update({
+      const { select } = ctx
+      const prismaParams = {
         ...args,
-        select: {
-          ...select.select,
-          ...uniqFieldSelect
-        }
-      })
-
-      if (updateConfig.afterUpdateOne) {
-        await updateConfig.afterUpdateOne(result, args, ctx, info)
+        ...select
       }
 
-      apiConfig.pubsub?.publish(`${modelName}_UPDATED`, result)
+      if (updateConfig.updateOneOverride) {
+        return updateConfig.updateOneOverride(prismaParams, ctx)
+      }
 
-      return result
+      return updateAndNotify({
+        modelName,
+        prismaParams,
+        apiConfig
+      })
     }
   })
 }

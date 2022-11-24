@@ -1,33 +1,8 @@
 import fs from 'fs'
 import { join } from 'path'
 import { DMMF } from '@prisma/generator-helper'
-import { capitalize } from 'lodash'
 
 import { writeFileSafely } from '../utils/writeFileSafely'
-
-const getTypeScriptTypeFromPrismaType = (prismaField: DMMF.Field) => {
-  const { type: prismaType } = prismaField
-
-  let type = ''
-  if (prismaType === 'Int' || prismaType === 'Float') {
-    type = 'number'
-  } else if (prismaType === 'Boolean') {
-    type = 'boolean'
-  } else if (prismaType === 'ID' || prismaType === 'String') {
-    type = 'string'
-  } else if (prismaType === 'DateTime') {
-    type = 'Date'
-  } else if (prismaType === 'Json') {
-    type = 'Record<string, any>'
-  } else {
-    type = prismaType
-  }
-
-  if (!prismaField.isRequired) { type = `(${type}|undefined)` }
-  if (prismaField.isList) { type += '[]' }
-
-  return `(${type})`
-}
 
 const genApiConfigType = (models: DMMF.Model[]) => {
   const modelNames = models.map(m => m.name)
@@ -37,6 +12,7 @@ const genApiConfigType = (models: DMMF.Model[]) => {
 `import { PubSubEngine } from 'graphql-subscriptions'
 
 export type ApiConfig = {
+  prisma: PrismaClient
   pubsub?: PubSubEngine
   data: {
     ${modelTypes.join('\n    ')}
@@ -46,38 +22,11 @@ export type ApiConfig = {
   return content
 }
 
-const getRequiredFieldResolverName = (model: DMMF.Model, field: DMMF.Field) => `${model.name}${capitalize(field.name)}RequiredFieldResolver`
-const getRequiredFieldResolver = (model: DMMF.Model, field: DMMF.Field) => {
-  const type = getTypeScriptTypeFromPrismaType(field)
-  const requiredFieldResolverName = getRequiredFieldResolverName(model, field)
-
-  return `export type ${requiredFieldResolverName} = {
-  fieldName: '${field.name}',
-  resolver: (root: any, args: any, ctx: any, info: any) => Promise<${type}>
-}\n`
-}
-
-const getOptionalFieldResolverName = (model: DMMF.Model, field: DMMF.Field) => `${model.name}${capitalize(field.name)}OptionalFieldResolver`
-const getOptionalFieldResolver = (model: DMMF.Model, field: DMMF.Field) => {
-  const type = getTypeScriptTypeFromPrismaType(field)
-  const optionalFieldResolverName = getOptionalFieldResolverName(model, field)
-
-  return `export type ${optionalFieldResolverName} = {
-  fieldName: '${field.name}',
-  resolver: (root: any, args: any, ctx: any, info: any) => Promise<${type}|void>
-}\n`
-}
-
 const genFieldTypes = (models: DMMF.Model[]) => {
   let content = ''
   for (let i = 0; i < models.length; i++) {
     const model = models[i]
     const modelName = model.name
-
-    const createFieldsTypeName = `${modelName}CreateFields`
-    const createFieldsTypes = []
-    const updateFieldsTypeName = `${modelName}UpdateFields`
-    const updateFieldsTypes = []
 
     const requiredFieldsTypeName = `${modelName}RequiredFields`
     const optionalFieldsTypeName = `${modelName}OptionalFields`
@@ -92,17 +41,6 @@ const genFieldTypes = (models: DMMF.Model[]) => {
       content += `export type ${requiredFieldsTypeName} = ${fieldStringNames.join(' | ')}`
       content += '\n'
       modelFieldsTypes.push(requiredFieldsTypeName)
-      updateFieldsTypes.push(requiredFieldsTypeName)
-
-      for (let j = 0; j < requiredFields.length; j++) {
-        const field = requiredFields[j]
-
-        content += getRequiredFieldResolver(model, field)
-        createFieldsTypes.push(getRequiredFieldResolverName(model, field))
-
-        content += getOptionalFieldResolver(model, field)
-        updateFieldsTypes.push(getOptionalFieldResolverName(model, field))
-      }
     }
 
     // Optional Fields
@@ -111,20 +49,8 @@ const genFieldTypes = (models: DMMF.Model[]) => {
       const fieldStringNames = optionalFields.map(of => `'${of.name}'`)
       content += `\nexport type ${optionalFieldsTypeName} = ${fieldStringNames.join(' | ')}\n`
       modelFieldsTypes.push(optionalFieldsTypeName)
-      createFieldsTypes.push(optionalFieldsTypeName)
-      updateFieldsTypes.push(optionalFieldsTypeName)
-
-      for (let j = 0; j < optionalFields.length; j++) {
-        const field = optionalFields[j]
-
-        content += getOptionalFieldResolver(model, field)
-        createFieldsTypes.push(getOptionalFieldResolverName(model, field))
-        updateFieldsTypes.push(getOptionalFieldResolverName(model, field))
-      }
     }
 
-    content += `export type ${createFieldsTypeName} = ${createFieldsTypes.join(' | ')}`
-    content += `\nexport type ${updateFieldsTypeName} = ${updateFieldsTypes.join(' | ')}`
     content += `\nexport type ${modelName}Fields = ${modelFieldsTypes.join(' | ')}`
   }
 
@@ -148,13 +74,8 @@ const genModelConfigTypes = (models: DMMF.Model[]) => {
     content += (i === 0 ? '' : '\n') + `
 export type ${modelName}ModelCreateConfiguration = {
     disableAll?: boolean
-    disableCreate?: boolean
-    disableUpsert?: boolean
-    removedFields?: ${modelName}CreateFields[]
-    beforeCreateOne?: BeforeOperationMiddleware
-    beforeUpsertOne?: BeforeOperationMiddleware
-    afterCreateOne?: AfterOperationMiddleware
-    afterUpsertOne?: AfterOperationMiddleware
+    removedFields?: ${modelName}Fields[]
+    createOneOverride?: OperationOverride<${modelName}>
     // access?: ${fullAccessRuleType}
 }
 
@@ -166,16 +87,11 @@ export type ${modelName}ModelReadConfiguration = {
     disableFindMany?: boolean
     disableFindUnique?: boolean
     removedFields?: ${modelName}Fields[]
-    beforeAggregate?: BeforeOperationMiddleware
-    beforeFindCount?: BeforeOperationMiddleware
-    beforeFindFirst?: BeforeOperationMiddleware
-    beforeFindMany?: BeforeOperationMiddleware
-    beforeFindUnique?: BeforeOperationMiddleware
-    afterAggregate?: AfterOperationMiddleware
-    afterFindCount?: AfterOperationMiddleware
-    afterFindFirst?: AfterOperationMiddleware
-    afterFindMany?: AfterOperationMiddleware
-    afterFindUnique?: AfterOperationMiddleware
+    aggregateOverride?: OperationOverride<Get${modelName}AggregateType>
+    findCountOverride?: OperationOverride<number>
+    findFirstOverride?: OperationOverride<${modelName}|null>
+    findManyOverride?: OperationOverride<${modelName}[]>
+    findUniqueOverride?: OperationOverride<${modelName}|null>
     // access?: ${fullAccessRuleType}
 }
 
@@ -183,25 +99,23 @@ export type ${modelName}ModelUpdateConfiguration = {
     disableAll?: boolean
     disableUpdateOne?: boolean
     disableUpdateMany?: boolean
-    disableUpsert?: boolean
-    removedFields?: ${modelName}UpdateFields[]
-    beforeUpdateOne?: BeforeOperationMiddleware
-    beforeUpdateMany?: BeforeOperationMiddleware
-    beforeUpsertOne?: BeforeOperationMiddleware
-    afterUpdateOne?: AfterOperationMiddleware
-    afterUpdateMany?: AfterOperationMiddleware
-    afterUpsertOne?: AfterOperationMiddleware
+    removedFields?: ${modelName}Fields[]
+    updateOneOverride?: OperationOverride<${modelName}>
+    updateManyOverride?: OperationOverride<BatchPayload>
     // access?: ${fullAccessRuleType}
+}
+
+export type ${modelName}ModelUpsertConfiguration = {
+  disableAll?: boolean
+  upsertOneOverride?: OperationOverride<${modelName}>
 }
 
 export type ${modelName}ModelDeleteConfiguration = {
   disableAll?: boolean
   disableDeleteOne?: boolean
   disableDeleteMany?: boolean
-  beforeDeleteOne?: BeforeOperationMiddleware
-  beforeDeleteMany?: BeforeOperationMiddleware
-  afterDeleteOne?: AfterOperationMiddleware
-  afterDeleteMany?: AfterOperationMiddleware
+  deleteOneOverride?: OperationOverride<${modelName}>
+  deleteManyOverride?: OperationOverride<BatchPayload>
   // access?: ${fullAccessRuleType}
 }
 
@@ -210,6 +124,7 @@ export type ${modelName}ModelConfiguration = {
   create?: ${modelName}ModelCreateConfiguration,
   read?: ${modelName}ModelReadConfiguration,
   update?: ${modelName}ModelUpdateConfiguration,
+  upsert?: ${modelName}ModelUpsertConfiguration,
   delete?: ${modelName}ModelDeleteConfiguration
 }`
   }
@@ -235,11 +150,11 @@ var ModelUniqFields;
 //# sourceMappingURL=apiConfig.js.map`
   await writeFileSafely(apiConfigJSPath, apiConfigJSContent)
 
-  const operationMiddlewareTypePath = join(__dirname, '../../src/_types/operationMiddleware.ts')
-  const operationMiddlewareType = fs.readFileSync(operationMiddlewareTypePath, 'utf8')
+  const operationOverrideTypePath = join(__dirname, '../../src/_types/operationOverride.ts')
+  const operationOverrideType = fs.readFileSync(operationOverrideTypePath, 'utf8')
 
   let contents = ''
-  contents += operationMiddlewareType
+  contents += operationOverrideType
   contents += '\n' + genFieldTypes(datamodel.models)
   contents += '\n' + genModelConfigTypes(datamodel.models)
   contents += '\n\n' + genApiConfigType(datamodel.models)

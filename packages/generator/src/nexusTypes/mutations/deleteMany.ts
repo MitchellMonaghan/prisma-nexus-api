@@ -2,8 +2,37 @@ import { DMMF } from '@prisma/generator-helper'
 import { mutationField, nonNull } from 'nexus'
 import { isEmpty } from 'lodash'
 
-import { getNexusOperationArgs } from '../getNexusArgs'
-import { ApiConfig, ModelUniqFields } from '../../_types/apiConfig'
+import { getNexusOperationArgs, getModelUniqFieldSelect } from '../getNexusArgs'
+import { ApiConfig } from '../../_types/apiConfig'
+
+export interface DeleteManyAndNotifyOptions {
+  modelName: string
+  prismaParams: any
+  apiConfig: ApiConfig
+  deleteEvent?: string
+}
+
+export const deleteManyAndNotify = async (options:DeleteManyAndNotifyOptions) => {
+  const {
+    modelName,
+    prismaParams,
+    apiConfig,
+    deleteEvent
+  } = options
+  const { prisma, pubsub } = apiConfig
+  const prismaModel = (prisma as any)[modelName]
+
+  const uniqFieldSelect = getModelUniqFieldSelect(modelName)
+  const itemsToBeDeleted = await prismaModel.findMany({
+    ...prismaParams,
+    select: uniqFieldSelect
+  })
+  const result = await prismaModel.deleteMany(prismaParams)
+
+  pubsub?.publish(deleteEvent || `${modelName}_DELETED`, itemsToBeDeleted)
+
+  return result
+}
 
 export const deleteMany = (
   modelName: string,
@@ -23,33 +52,20 @@ export const deleteMany = (
   return mutationField(mutationName, {
     type: nonNull('BatchPayload'),
     args,
-    resolve: async (parent, args, ctx, info) => {
-      const { where } = args
-      const { prisma } = ctx
-
-      if (deleteConfig.beforeDeleteMany) {
-        const canDelete = await deleteConfig.beforeDeleteMany(parent, args, ctx, info)
-        if (!canDelete) { throw new Error('Unauthorized') }
+    resolve: async (_parent, args, ctx) => {
+      const prismaParams = {
+        ...args
       }
 
-      const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
-        accumulator[currentValue] = true
-        return accumulator
-      }, {} as Record<string, boolean>)
+      if (deleteConfig.deleteManyOverride) {
+        return deleteConfig.deleteManyOverride(prismaParams, ctx)
+      }
 
-      const itemsToBeDeleted = await prisma[modelName].findMany({
-        where,
-        select: uniqFieldSelect
+      return deleteManyAndNotify({
+        modelName,
+        prismaParams,
+        apiConfig
       })
-      const result = await prisma[modelName].deleteMany({ where })
-
-      if (deleteConfig.afterDeleteMany) {
-        await deleteConfig.afterDeleteMany(result, args, ctx, info)
-      }
-
-      apiConfig.pubsub?.publish(`${modelName}_DELETED`, itemsToBeDeleted)
-
-      return result
     }
   })
 }
