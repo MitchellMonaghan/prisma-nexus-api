@@ -120,7 +120,8 @@ export type ${modelName}ModelDeleteConfiguration = {
 }
 
 export type ${modelName}ModelConfiguration = {
-  disableAll?: boolean
+  removeFromSchema?: boolean
+  disableAllOperations?: boolean
   create?: ${modelName}ModelCreateConfiguration,
   read?: ${modelName}ModelReadConfiguration,
   update?: ${modelName}ModelUpdateConfiguration,

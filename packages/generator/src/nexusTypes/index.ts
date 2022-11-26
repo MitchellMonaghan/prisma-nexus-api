@@ -141,7 +141,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
     let inputFields = filterInputsWithApiConfig(modelName, input, apiConfig)
     inputFields = inputFields.filter(f => !inputsWithNoFields.includes(f.inputTypes[0].type.toString()))
 
-    if (allConfig.disableAll || modelConfig.disableAll || inputFields.length === 0) {
+    if (allConfig.removeFromSchema || modelConfig.removeFromSchema || inputFields.length === 0) {
       inputsWithNoFields.push(input.name)
       return
     }
@@ -194,7 +194,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
       const removedFields = getModelRemovedFields(modelName, 'read', apiConfig)
 
       const outputFields = type.fields.filter(f => !(removedFields.includes(f.name) || outputsWithNoFields.includes(f.outputType.type.toString())))
-      if (allConfig.disableAll || modelConfig.disableAll || outputFields.length === 0) {
+      if (allConfig.removeFromSchema || modelConfig.removeFromSchema || outputFields.length === 0) {
         outputsWithNoFields.push(type.name)
         return
       }
@@ -239,7 +239,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
       return !excludeFields.includes(field.name)
     })
 
-    if (allConfig.disableAll || modelConfig.disableAll || filteredFields.length === 0) {
+    if (allConfig.removeFromSchema || modelConfig.removeFromSchema || filteredFields.length === 0) {
       return
     }
 
@@ -270,7 +270,8 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
     allTypes.push(model.name)
 
     // Queries
-    if (queryOutputTypes) {
+    const operationsDisabled = allConfig.removeFromSchema || allConfig.disableAllOperations || modelConfig.removeFromSchema || modelConfig.disableAllOperations
+    if (queryOutputTypes && !operationsDisabled) {
       const allReadConfig = allConfig?.read || {}
       const readConfig = modelConfig?.read || {}
       if (!(allReadConfig.disableAll || readConfig.disableAll)) {
@@ -297,7 +298,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
     }
 
     // Mutations
-    if (mutationOutputTypes) {
+    if (mutationOutputTypes && !operationsDisabled) {
       const allCreateConfig = allConfig?.create || {}
       const createConfig = modelConfig?.create || {}
       if (!(allCreateConfig.disableAll || createConfig.disableAll)) {

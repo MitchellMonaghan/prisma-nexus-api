@@ -55,7 +55,8 @@ export type ModelDeleteConfiguration = {
 }
 
 export type ModelConfiguration = {
-    disableAll?: boolean
+    removeFromSchema?: boolean
+    disableAllOperations?: boolean
     create?: ModelCreateConfiguration
     read?: ModelReadConfiguration
     update?: ModelUpdateConfiguration
