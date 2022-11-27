@@ -155,7 +155,7 @@ Using `disableAll` will disable all operations in that grouping. Ex. `ModelDelet
 
 # Override
 
-The override functions are a hook you can use for the incomming operation. These allow you to add custom validation, permission checks, or custom logic. If you don't need your valiation/authorized checks in this level of scope I suggest using [graphql-shield](https://the-guild.dev/graphql/shield/docs)
+The override functions are a hook you can use for the incomming operation. These allow you to add custom validation, permission checks, or custom logic. If you don't need your validation/authorized checks in this level of scope I suggest using [graphql-shield](https://the-guild.dev/graphql/shield/docs)
 
 > ### Note the prisma function will no longer be called by default when using the override hook.
 
@@ -163,7 +163,7 @@ The override functions are a hook you can use for the incomming operation. These
 
 ```typescript
 export type OperationOverrideOptions<ParamsType, ContextType> = {
-    // Car, etc
+    // car, user, etc
     modelName:string
     // create, update, etc
     prismaOperation:string
@@ -204,4 +204,4 @@ export interface CreateAndNotifyOptions extends OperationOverrideOptions {
 }
 ```
 
-By default these events are `ModelName_CREATED`, `Car_CREATED`, `User_UPDATED`, `Book_DELETED` etc.
+By default these events are `modelName_CREATED`, `car_CREATED`, `user_UPDATED`, `book_DELETED` etc.
