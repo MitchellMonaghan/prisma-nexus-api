@@ -2,7 +2,7 @@
 
 The intention of this project is the following:
 1. Single package with prisma generator and `getNexusTypes` helper fuction.
-2. Using prisma generator, a `ApiConfig` type is generated based on db schema. The generate types are to help with auto completion/configuration.
+2. Using prisma generator, a `ApiConfig` type is generated based on db schema. The generated types are to help with auto completion/configuration.
 3. The function `getNexusTypes` takes a options object that contains this `ApiConfig`.
 4. `getNexusTypes` returns all needed nexus types based on the `ApiConfig` (`queries`, `mutations`, `inputs`, `outputs`, and `models`.
 5. Users can use the nexus `extendType` to extend the types generated at runtime.
@@ -26,10 +26,10 @@ npx prisma generate
 ```
 This will generate all typing needed for your api.
 
-The generator can also have a `schemaPath` property configured. The default schema path is `./prisma/schema.prisma`.
+The generator can also have a `schemaPath` property configured. The default schema path is `./prisma/schema.prisma`.<br/><br/>
 
 # Configruation
-You must pass your prismaClient to `ApiConfig`. You can optionally pass a `PubSubEngine` for publishing subscrption events. See [graphql-subscriptions](https://github.com/apollographql/graphql-subscriptions) for more on the `PubSubEngine`.
+You must pass your prismaClient to `ApiConfig`. You can optionally pass a `PubSubEngine` for publishing subscription events. See [graphql-subscriptions](https://github.com/apollographql/graphql-subscriptions) for more on the `PubSubEngine`.
 
 A `ApiConfig` can specify a `ModelConfiguration` for each model in your db. The prisma generator will generate typescript typing to help with auto completion of your apiConfiguration object. There is also a `all` `ModelConfiguration` which will be applied to all models.
 
@@ -164,4 +164,4 @@ export interface CreateAndNotifyOptions extends OperationOverrideOptions {
 }
 ```
 
-By default these events are `Car_CREATED`, `User_UPDATED`, `Book_DELETED` etc.
+By default these events are `ModelName_CREATED`, `Car_CREATED`, `User_UPDATED`, `Book_DELETED` etc.
