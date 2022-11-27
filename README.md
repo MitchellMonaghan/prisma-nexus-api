@@ -30,6 +30,46 @@ This will generate all typing needed for your api.
 
 The generator can also have a `schemaPath` property configured. The default schema path is `./prisma/schema.prisma`.<br/><br/>
 
+# Plugin Usage
+
+To use `getNexusTypes`, call it with your `ApiConfig`. Then pass these types to nexus.
+
+>Note you must use the @paljs/nexus plugin. This adds functionality to convert graphql info into a prisma select statement used by our operations.
+
+```typescript
+import { makeSchema } from 'nexus'
+import { getNexusTypes, ApiConfig } from 'prisma-nexus-api'
+import { paljs } from '@paljs/nexus'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+const apiConfig:ApiConfig = {
+  prisma,
+  data: {
+    all: {}
+  }
+}
+
+const getSchema = async () => {
+  const types = await getNexusTypes({
+    apiConfig
+  })
+
+  return makeSchema({
+    types,
+    plugins: [
+      paljs()
+    ],
+    outputs: {
+      schema: path.join(__dirname, './generated/nexus/schema.graphql'),
+      typegen: path.join(__dirname, './generated/nexus/nexus.ts')
+    }
+  })
+}
+```
+<br/>
+
 # Configruation
 You must pass your prismaClient to `ApiConfig`. You can optionally pass a `PubSubEngine` for publishing subscription events. See [graphql-subscriptions](https://github.com/apollographql/graphql-subscriptions) for more on the `PubSubEngine`.
 

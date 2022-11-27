@@ -8,7 +8,12 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-const apiConfig:ApiConfig = { data: {} }
+const apiConfig:ApiConfig = {
+  prisma,
+  data: {
+    all: {}
+  }
+}
 
 const getSchema = async () => {
   const types = await getNexusTypes({
