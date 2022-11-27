@@ -1,7 +1,7 @@
 {
   "name": "prisma-nexus-api",
   "description": "Provide a description about your generator",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "author": "Mitchell Monaghan <mitchell.monaghan@hotmail.com>",
   "main": "dist/index.js",
   "module": "dist/index.js",
