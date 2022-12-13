@@ -325,7 +325,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
         nexusSchema.push(upsertOne(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
       }
 
-      const allDeleteConfig = modelConfig?.delete || {}
+      const allDeleteConfig = allConfig?.delete || {}
       const deleteConfig = modelConfig?.delete || {}
       if (!(allDeleteConfig.disableAll || deleteConfig.disableAll)) {
         if (!(allDeleteConfig.disableDeleteOne || deleteConfig.disableDeleteOne)) {
