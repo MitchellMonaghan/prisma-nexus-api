@@ -37,7 +37,7 @@
   "dependencies": {
     "@mrleebo/prisma-ast": "https://github.com/MitchellMonaghan/prisma-ast",
     "@paljs/utils": "^5.0.2",
-    "@prisma/client": "4.7.1",
+    "@prisma/client": "4.8.0",
     "@prisma/generator-helper": "^4.6.1",
     "@prisma/internals": "^4.6.1",
     "graphql": "^16.6.0",
