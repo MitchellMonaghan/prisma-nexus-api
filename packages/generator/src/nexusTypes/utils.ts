@@ -62,7 +62,7 @@ export const getModelRemovedFields = (modelName: string, operation:'create'|'rea
   const modelOperationConfiguration = modelConfiguration[operation] || {}
 
   const excludedAllFields = allOperationConfiguration?.removedFields || []
-  const excludedModelFields = modelOperationConfiguration?.removedFields || []
+  const excludedModelFields = (modelConfiguration?.removedFields || []).concat(modelOperationConfiguration?.removedFields || [])
   const excludedFields = excludedAllFields.concat(excludedModelFields)
 
   return excludedFields

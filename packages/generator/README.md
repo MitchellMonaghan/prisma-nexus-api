@@ -91,6 +91,7 @@ A `ModelConfiguration` can then have configuration for each supported operation 
 ```typescript
 export type ModelConfiguration = {
     removeFromSchema?: boolean
+    removedFields?: string[]
     disableAllOperations?: boolean
     create?: ModelCreateConfiguration
     read?: ModelReadConfiguration

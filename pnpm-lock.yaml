@@ -18,7 +18,6 @@ importers:
 
   packages/generator:
     specifiers:
-      '@mrleebo/prisma-ast': https://github.com/MitchellMonaghan/prisma-ast
       '@paljs/utils': ^5.0.2
       '@prisma/client': 4.7.1
       '@prisma/generator-helper': ^4.6.1
@@ -43,7 +42,6 @@ importers:
       ts-jest: ^29.0.3
       typescript: 4.9.4
     dependencies:
-      '@mrleebo/prisma-ast': github.com/MitchellMonaghan/prisma-ast/925327f5372a39b35b54ad25074118bc494bfa85
       '@paljs/utils': 5.0.2
       '@prisma/client': 4.7.1_prisma@4.7.1
       '@prisma/generator-helper': 4.6.1
@@ -624,14 +622,6 @@ packages:
   /@bcoe/v8-coverage/0.2.3:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
-
-  /@chevrotain/types/9.1.0:
-    resolution: {integrity: sha512-3hbCD1CThkv9gnaSIPq0GUXwKni68e0ph6jIHwCvcWiQ4JB2xi8bFxBain0RF04qHUWuDjgnZLj4rLgimuGO+g==}
-    dev: false
-
-  /@chevrotain/utils/9.1.0:
-    resolution: {integrity: sha512-llLJZ8OAlZrjGlBvamm6Zdo/HmGAcCLq5gx7cSwUX8No+n/8ip+oaC4x33IdZIif8+Rh5dQUIZXmfbSghiOmNQ==}
-    dev: false
 
   /@commitlint/cli/16.2.3:
     resolution: {integrity: sha512-VsJBQLvhhlOgEfxs/Z5liYuK0dXqLE5hz1VJzLBxiOxG31kL/X5Q4OvK292BmO7IGZcm1yJE3XQPWSiFaEHbWA==}
@@ -2405,14 +2395,6 @@ packages:
       uuid: 8.3.2
     transitivePeerDependencies:
       - encoding
-    dev: false
-
-  /chevrotain/9.1.0:
-    resolution: {integrity: sha512-A86/55so63HCfu0dgGg3j9u8uuuBOrSqly1OhBZxRu2x6sAKILLzfVjbGMw45kgier6lz45EzcjjWtTRgoT84Q==}
-    dependencies:
-      '@chevrotain/types': 9.1.0
-      '@chevrotain/utils': 9.1.0
-      regexp-to-ast: 0.5.0
     dev: false
 
   /chownr/1.1.4:
@@ -5226,10 +5208,6 @@ packages:
       strip-indent: 3.0.0
     dev: true
 
-  /regexp-to-ast/0.5.0:
-    resolution: {integrity: sha512-tlbJqcMHnPKI9zSrystikWKwHkBqu2a/Sgw01h3zFjvYrMxEDYHzzoMZnUrbIfpTFEsoRnnviOXNCzFiSc54Qw==}
-    dev: false
-
   /regexp.prototype.flags/1.4.3:
     resolution: {integrity: sha512-fjggEOO3slI6Wvgjwflkc4NFRCTZAu5CnNfBd5qOMYhWdn67nJBBu34/TkD++eeFmd8C9r9jfXJ27+nSiRkSUA==}
     engines: {node: '>= 0.4'}
@@ -6158,15 +6136,4 @@ packages:
       archiver-utils: 2.1.0
       compress-commons: 4.1.1
       readable-stream: 3.6.0
-    dev: false
-
-  github.com/MitchellMonaghan/prisma-ast/925327f5372a39b35b54ad25074118bc494bfa85:
-    resolution: {tarball: https://codeload.github.com/MitchellMonaghan/prisma-ast/tar.gz/925327f5372a39b35b54ad25074118bc494bfa85}
-    name: '@mrleebo/prisma-ast'
-    version: 0.4.1
-    engines: {node: '>=12'}
-    prepare: true
-    requiresBuild: true
-    dependencies:
-      chevrotain: 9.1.0
     dev: false

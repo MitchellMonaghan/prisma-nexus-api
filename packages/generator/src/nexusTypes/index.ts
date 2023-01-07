@@ -8,7 +8,6 @@ import { getSchema, getDMMF } from '@prisma/internals'
 import { ApiConfig } from '../_types/apiConfig'
 import { maxBy } from 'lodash'
 
-import { getPrismaApiSchema } from './getPrismaApiSchema'
 import { getModelRemovedFields } from './utils'
 import {
   aggregate,
@@ -96,11 +95,7 @@ export interface PrismaNexusPluginSettings {
 export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
   const { apiConfig } = settings
   const dbSchema = await getSchema(settings.schemaPath)
-  const apiSchema = await getPrismaApiSchema({
-    dbSchema,
-    apiConfig
-  })
-  const apiDmmf = await getDMMF({ datamodel: apiSchema })
+  const apiDmmf = await getDMMF({ datamodel: dbSchema })
   const apiDataConfig = apiConfig.data
   const allConfig = apiDataConfig.all || {}
 
