@@ -145,7 +145,8 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
           const inputType = getInputType(field, settings)
           const hasEmptyType = inputType.location === 'inputObjectTypes' &&
               hasEmptyTypeFields(data, inputType.type as string, {
-                dmmf: apiDmmf
+                dmmf: apiDmmf,
+                doNotUseFieldUpdateOperationsInput: settings.doNotUseFieldUpdateOperationsInput
               })
 
           if (!hasEmptyType) {
