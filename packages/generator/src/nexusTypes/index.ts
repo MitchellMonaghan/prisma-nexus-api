@@ -1,4 +1,3 @@
-import { getInputType } from '@paljs/utils'
 import { enumType, inputObjectType, objectType } from 'nexus'
 
 import { NexusAcceptedTypeDef } from 'nexus/dist/builder'
@@ -25,6 +24,7 @@ import {
   deleteOne,
   deleteMany
 } from './mutations'
+import { ExcludeScalar, getScalars } from './scalars'
 
 export {
   createAndNotify,
@@ -79,17 +79,10 @@ const hasEmptyTypeFields = (schema: DMMF.Schema, type: string, options?: Options
 }
 
 export interface PrismaNexusPluginSettings {
-  prismaSelectOptions?: {
-    defaultFields?: {
-      [key: string]:
-        | { [key: string]: boolean }
-        | ((select: any) => { [key: string]: boolean });
-    };
-    dmmf?: DMMF.Document[];
-  };
   schemaPath?: string;
   doNotUseFieldUpdateOperationsInput?: boolean;
-  apiConfig: ApiConfig
+  apiConfig: ApiConfig,
+  excludeScalar?: ExcludeScalar
 }
 
 export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
@@ -334,6 +327,16 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
     }
   })
 
+  nexusSchema.push(objectType({
+    name: 'BatchPayload',
+    definition (t) {
+      t.nonNull.int('count')
+    }
+  }))
+  nexusSchema.push(
+    ...getScalars(settings.excludeScalar || []) as any
+  )
+
   return nexusSchema
 }
 
@@ -361,4 +364,24 @@ const filterInputsWithApiConfig = (modelName:string, input: DMMF.InputType, apiC
     return !(removedFields.includes(field.name))
   })
   return fields
+}
+
+const getInputType = (field: DMMF.SchemaArg, options?: { doNotUseFieldUpdateOperationsInput?: boolean }) => {
+  let index = 0
+  if (
+    options?.doNotUseFieldUpdateOperationsInput &&
+    field.inputTypes.length > 1 &&
+    (field.inputTypes[1].type as string).endsWith('FieldUpdateOperationsInput')
+  ) {
+    return field.inputTypes[index]
+  }
+  if (
+    field.inputTypes.length > 1 &&
+    (field.inputTypes[1].location === 'inputObjectTypes' ||
+      field.inputTypes[1].isList ||
+      field.inputTypes[1].type === 'Json')
+  ) {
+    index = 1
+  }
+  return field.inputTypes[index]
 }

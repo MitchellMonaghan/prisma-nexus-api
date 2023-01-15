@@ -27,10 +27,11 @@
   },
   "dependencies": {
     "@apollo/server": "^4.1.1",
-    "@paljs/nexus": "^5.0.2",
+    "@paljs/plugins": "^5.2.0",
     "@prisma/client": "4.6.1",
-    "prisma-nexus-api": "workspace:*",
     "graphql": "^16.6.0",
-    "nexus": "^1.3.0"
+    "graphql-middleware": "^6.1.33",
+    "nexus": "^1.3.0",
+    "prisma-nexus-api": "workspace:*"
   }
 }

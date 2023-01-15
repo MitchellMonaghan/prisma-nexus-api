@@ -34,12 +34,13 @@ The generator can also have a `schemaPath` property configured. The default sche
 
 To use `getNexusTypes`, call it with your `ApiConfig`. Then pass these types to nexus.
 
->Note you must use the @paljs/nexus plugin. This adds functionality to convert graphql info into a prisma select statement used by our operations.
+>Note you must use PrismaSelect from @paljs/plugins. This adds functionality to convert graphql info into a prisma select statement used by our operations.
 
 ```typescript
 import { makeSchema } from 'nexus'
 import { getNexusTypes, ApiConfig } from 'prisma-nexus-api'
-import { paljs } from '@paljs/nexus'
+import { applyMiddleware } from 'graphql-middleware'
+import { PrismaSelect } from '@paljs/plugins'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -56,16 +57,20 @@ const getSchema = async () => {
     apiConfig
   })
 
-  return makeSchema({
+  const schema = makeSchema({
     types,
-    plugins: [
-      paljs()
-    ],
     outputs: {
       schema: path.join(__dirname, './generated/nexus/schema.graphql'),
       typegen: path.join(__dirname, './generated/nexus/nexus.ts')
     }
   })
+
+  const prismaSelect = async (resolve: any, root:any, args:any, ctx: any, info:any) => {
+    ctx.select = new PrismaSelect(info).value
+    return resolve(root, args, ctx, info)
+  }
+
+  return applyMiddleware(schema, prismaSelect)
 }
 ```
 <br/>
@@ -158,7 +163,7 @@ Using `disableAll` will disable all operations in that grouping. Ex. `ModelDelet
 
 # Override
 
-The override functions are a hook you can use for the incomming operation. These allow you to add custom validation, permission checks, or custom logic. If you don't need your validation/authorized checks in this level of scope I suggest using [graphql-shield](https://the-guild.dev/graphql/shield/docs)
+The override functions are a hook you can use for the incoming operation. These allow you to add custom validation, permission checks, or custom logic. If you don't need your validation/authorized checks in this level of scope I suggest using [graphql-shield](https://the-guild.dev/graphql/shield/docs)
 
 > ### Note the prisma function will no longer be called by default when using the override hook.
 

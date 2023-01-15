@@ -3,8 +3,9 @@ import { ApolloServer } from '@apollo/server'
 import { startStandaloneServer } from '@apollo/server/standalone'
 import { makeSchema } from 'nexus'
 import { getNexusTypes, ApiConfig } from 'prisma-nexus-api'
-import { paljs } from '@paljs/nexus'
 import { PrismaClient } from '@prisma/client'
+import { applyMiddleware } from 'graphql-middleware'
+import { PrismaSelect } from '@paljs/plugins'
 
 const prisma = new PrismaClient()
 
@@ -20,16 +21,20 @@ const getSchema = async () => {
     apiConfig
   })
 
-  return makeSchema({
+  const schema = makeSchema({
     types,
-    plugins: [
-      paljs()
-    ],
     outputs: {
       schema: path.join(__dirname, './generated/nexus/schema.graphql'),
       typegen: path.join(__dirname, './generated/nexus/nexus.ts')
     }
   })
+
+  const prismaSelect = async (resolve: any, root:any, args:any, ctx: any, info:any) => {
+    ctx.select = new PrismaSelect(info).value
+    return resolve(root, args, ctx, info)
+  }
+
+  return applyMiddleware(schema, prismaSelect)
 }
 
 const start = async () => {
