@@ -1,7 +1,7 @@
 {
   "name": "prisma-nexus-api",
   "description": "Tool for creating api's easier using prisma and nexus",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "author": "Mitchell Monaghan <mitchell.monaghan@hotmail.com>",
   "main": "dist/index.js",
   "module": "dist/index.js",

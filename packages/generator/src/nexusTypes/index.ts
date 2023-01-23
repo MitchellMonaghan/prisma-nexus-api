@@ -303,7 +303,7 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
           nexusSchema.push(updateOne(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
         }
 
-        if (!allUpdateConfig.disableUpdateMany || updateConfig.disableUpdateMany) {
+        if (!(allUpdateConfig.disableUpdateMany || updateConfig.disableUpdateMany)) {
           nexusSchema.push(updateMany(model.name, mutationOutputTypes, apiConfig, inputsWithNoFields))
         }
       }
