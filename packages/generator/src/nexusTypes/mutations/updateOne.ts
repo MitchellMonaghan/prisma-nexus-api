@@ -23,15 +23,28 @@ export const updateAndNotify = async (options:UpdateAndNotifyOptions) => {
   const prismaModel = (prisma as any)[modelName]
 
   const uniqFieldSelect = getModelUniqFieldSelect(modelName)
+
+  const selectStatement = {
+    ...prismaParams.select,
+    ...uniqFieldSelect
+  }
+
+  console.log('updateAndNotify')
+  console.log(typeof prismaModel?.update)
+  console.log(JSON.stringify(prismaParams))
+  console.log(JSON.stringify(uniqFieldSelect))
+  console.log(JSON.stringify(selectStatement))
+
   const result = await prismaModel.update({
     ...prismaParams,
-    select: {
-      ...prismaParams.select,
-      ...uniqFieldSelect
-    }
+    select: selectStatement
   })
 
+  console.log('after updateAndNotify')
+
   pubsub?.publish(updateEvent || `${modelName}_UPDATED`, result)
+
+  console.log('after notify')
 
   return result
 }
