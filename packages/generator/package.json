@@ -1,7 +1,7 @@
 {
   "name": "prisma-nexus-api",
   "description": "Tool for creating api's easier using prisma and nexus",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "author": "Mitchell Monaghan <mitchell.monaghan@hotmail.com>",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -23,7 +23,7 @@
     "prisma-nexus-api": "dist/bin.js"
   },
   "engines": {
-    "node": ">=14.0"
+    "node": ">=16.0"
   },
   "scripts": {
     "start": "node dist/bin.js",
@@ -35,7 +35,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@prisma/client": "4.7.1",
+    "@prisma/client": "4.11.0",
     "@prisma/generator-helper": "^4.6.1",
     "@prisma/internals": "^4.6.1",
     "decimal.js": "^10.4.3",
@@ -48,7 +48,7 @@
   "devDependencies": {
     "@types/jest": "^29.2.2",
     "@types/lodash": "^4.14.189",
-    "@types/node": "18.11.13",
+    "@types/node": "18.15.4",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
     "@typescript-eslint/parser": "^5.43.0",
     "eslint": "^8.27.0",
@@ -58,8 +58,8 @@
     "eslint-plugin-n": "^15.5.1",
     "eslint-plugin-promise": "^6.1.1",
     "jest": "^29.3.1",
-    "prisma": "4.7.1",
+    "prisma": "4.11.0",
     "ts-jest": "^29.0.3",
-    "typescript": "4.9.4"
+    "typescript": "^5.0.2"
   }
 }
