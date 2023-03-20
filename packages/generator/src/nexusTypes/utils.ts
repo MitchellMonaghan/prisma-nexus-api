@@ -47,7 +47,9 @@ export const getNexusOperationArgs = (operationName: string, outputTypes: DMMF.O
 
 export const getModelUniqFieldSelect = (modelName: string) => {
   const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
-    accumulator[currentValue] = true
+    if (currentValue) {
+      accumulator[currentValue] = true
+    }
     return accumulator
   }, {} as Record<string, boolean>)
 
