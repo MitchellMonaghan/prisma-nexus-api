@@ -135,22 +135,14 @@ export type ${modelName}ModelConfiguration = {
 }
 
 export const genApiConfigTypes = async (datamodel: DMMF.Datamodel) => {
-  const modelUniqFields = datamodel.models.map(model => {
+  const modelUniqFields = datamodel.models.reduce((acc, model) => {
     const uniqFields = model.fields.filter(f => f.isId || f.isUnique).map(f => f.name)
-    return `ModelUniqFields["${model.name}"] = "${uniqFields.join(',')}";`
-  })
+    acc[model.name] = uniqFields
+    return acc
+  }, {} as any)
 
-  const apiConfigJSPath = join(__dirname, '../_types/apiConfig.js')
-  const apiConfigJSContent =
-`"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ModelUniqFields = void 0;
-var ModelUniqFields;
-(function (ModelUniqFields) {
-    ${modelUniqFields.join('\n    ')}
-})(ModelUniqFields = exports.ModelUniqFields || (exports.ModelUniqFields = {}));
-//# sourceMappingURL=apiConfig.js.map`
-  await writeFileSafely(apiConfigJSPath, apiConfigJSContent)
+  const apiConfigJSPath = join(__dirname, '../_types/uniqFields.json')
+  await writeFileSafely(apiConfigJSPath, JSON.stringify(modelUniqFields))
 
   let contents = genFieldTypes(datamodel.models)
   contents += '\n' + genModelConfigTypes(datamodel.models)

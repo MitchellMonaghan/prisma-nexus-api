@@ -9,7 +9,8 @@ import {
   PropertySelector
 } from '../_types/genericPropertySelector'
 
-import { ApiConfig, ModelUniqFields } from '../_types/apiConfig'
+import { ApiConfig } from '../_types/apiConfig'
+import ModelUniqFields from '../_types/uniqFields.json'
 
 const getType = (arg: DMMF.SchemaArg) => {
   let type = `${arg.inputTypes[0].type}` as any
@@ -46,12 +47,14 @@ export const getNexusOperationArgs = (operationName: string, outputTypes: DMMF.O
 }
 
 export const getModelUniqFieldSelect = (modelName: string) => {
-  const uniqFieldSelect = ((ModelUniqFields[modelName as any] || '').split(',')).reduce((accumulator, currentValue) => {
-    if (currentValue) {
-      accumulator[currentValue] = true
-    }
-    return accumulator
-  }, {} as Record<string, boolean>)
+  const uniqFieldLookup = ModelUniqFields as any
+  const uniqFieldSelect = (uniqFieldLookup[modelName] as string[] || [])
+    .reduce((accumulator, currentValue) => {
+      if (currentValue) {
+        accumulator[currentValue] = true
+      }
+      return accumulator
+    }, {} as Record<string, boolean>)
 
   return uniqFieldSelect
 }
