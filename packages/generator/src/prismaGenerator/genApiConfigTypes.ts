@@ -122,6 +122,8 @@ export type ${modelName}ModelDeleteConfiguration = {
 export type ${modelName}ModelConfiguration = {
   removeFromSchema?: boolean
   removedFields?: ${modelName}Fields[]
+  removeNestedCreate?: boolean
+  removeNestedUpdate?: boolean
   disableAllOperations?: boolean
   create?: ${modelName}ModelCreateConfiguration,
   read?: ${modelName}ModelReadConfiguration,

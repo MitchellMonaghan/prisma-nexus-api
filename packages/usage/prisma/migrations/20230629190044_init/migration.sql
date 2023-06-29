@@ -14,6 +14,15 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "Note" (
+    "id" SERIAL NOT NULL,
+    "note" TEXT NOT NULL,
+    "created_by_user_id" INTEGER NOT NULL,
+
+    CONSTRAINT "Note_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Car" (
     "id" SERIAL NOT NULL,
     "color" TEXT NOT NULL,
@@ -24,3 +33,6 @@ CREATE TABLE "Car" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- AddForeignKey
+ALTER TABLE "Note" ADD CONSTRAINT "Note_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -150,6 +150,24 @@ export const getNexusTypes = async (settings: PrismaNexusPluginSettings) => {
               })
 
           if (!hasEmptyType) {
+            const isNestedInput = input.name.toLowerCase().includes('nested')
+            const isConnectOrCreate = field.name === 'connectOrCreate'
+            const isCreate = field.name === 'create'
+            const isCreateMany = field.name === 'createMany'
+            const isUpdate = field.name === 'update'
+            const isUpsert = field.name === 'upsert'
+
+            const removeNestedCreate = (allConfig.removeNestedCreate || modelConfig.removeNestedCreate) && isNestedInput
+            const removeNestedUpdate = (allConfig.removeNestedUpdate || modelConfig.removeNestedUpdate) && isNestedInput
+
+            if (removeNestedCreate && (
+              isCreate ||
+              isCreateMany ||
+              isConnectOrCreate ||
+              isUpsert)
+            ) { return }
+            if (removeNestedUpdate && (isUpdate || isUpsert)) { return }
+
             const fieldConfig: FieldConfig = {
               type: inputType.type as string
             }

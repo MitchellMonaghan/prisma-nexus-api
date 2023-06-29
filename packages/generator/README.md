@@ -97,6 +97,8 @@ A `ModelConfiguration` can then have configuration for each supported operation 
 export type ModelConfiguration = {
     removeFromSchema?: boolean
     removedFields?: string[]
+    removeNestedCreate?: boolean
+    removeNestedUpdate?: boolean
     disableAllOperations?: boolean
     create?: ModelCreateConfiguration
     read?: ModelReadConfiguration

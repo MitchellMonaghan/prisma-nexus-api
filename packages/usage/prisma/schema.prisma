@@ -15,6 +15,16 @@ model User {
   id    Int     @id @default(autoincrement())
   email String  @unique
   name  String?
+
+  createdNotes Note[] @relation(name: "createdNotes")
+}
+
+model Note {
+  id   Int    @id @default(autoincrement())
+  note String
+
+  createdBy       User @relation(name: "createdNotes", fields: [createdByUserId], references: [id])
+  createdByUserId Int  @map("created_by_user_id")
 }
 
 model Car {
