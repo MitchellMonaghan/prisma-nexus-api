@@ -3,7 +3,7 @@ import { DMMF } from '@prisma/generator-helper'
 
 import { writeFileSafely } from '../utils/writeFileSafely'
 
-const genApiConfigType = (models: DMMF.Model[]) => {
+const genApiConfigType = (models: readonly DMMF.Model[]) => {
   const modelNames = models.map(m => m.name)
   const modelTypes = modelNames.map(m => `${m}?: ${m}ModelConfiguration`)
 
@@ -22,7 +22,7 @@ export type ApiConfig = {
   return content
 }
 
-const genFieldTypes = (models: DMMF.Model[]) => {
+const genFieldTypes = (models: readonly DMMF.Model[]) => {
   let content = ''
   for (let i = 0; i < models.length; i++) {
     const model = models[i]
@@ -57,7 +57,7 @@ const genFieldTypes = (models: DMMF.Model[]) => {
   return content
 }
 
-const genModelConfigTypes = (models: DMMF.Model[]) => {
+const genModelConfigTypes = (models: readonly DMMF.Model[]) => {
   const modelNames = models.map(m => m.name)
 
   let content = ''

@@ -7,7 +7,7 @@ const getNumberFieldsTypeName = (modelName:string) => `${modelName}NumberFields`
 const getBoleanFieldsTypeName = (modelName:string) => `${modelName}BooleanFields`
 const getDateFieldsTypeName = (modelName:string) => `${modelName}DateTimeFields`
 
-const genFieldTypes = (models: DMMF.Model[]) => {
+const genFieldTypes = (models: readonly DMMF.Model[]) => {
   let content = ''
   for (let i = 0; i < models.length; i++) {
     const model = models[i]

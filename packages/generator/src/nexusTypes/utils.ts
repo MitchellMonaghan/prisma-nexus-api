@@ -26,7 +26,7 @@ const getType = (arg: DMMF.SchemaArg) => {
   return type
 }
 
-export const getNexusArgs = (args: DMMF.SchemaArg[], inputsWithNoFields?:string[]) => {
+export const getNexusArgs = (args: readonly DMMF.SchemaArg[], inputsWithNoFields?:string[]) => {
   const nexusArgs = {} as Record<string, any>
   args.forEach((arg) => {
     const argIsEmpty = inputsWithNoFields && inputsWithNoFields.includes(arg.name)
